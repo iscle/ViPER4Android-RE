@@ -5,7 +5,7 @@ import android.app.Application
 class ViPERApp : Application() {
     companion object {
         init {
-            System.loadLibrary("hiddenapibypass")
+            HiddenApi.unseal()
         }
     }
 }
