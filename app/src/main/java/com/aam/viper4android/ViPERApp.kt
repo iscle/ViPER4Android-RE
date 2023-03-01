@@ -5,14 +5,21 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import dagger.hilt.android.HiltAndroidApp
-
-private const val TAG = "ViPERApp"
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.os.Build
+import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class ViPERApp : Application() {
+    companion object {
+        init {
+            HiddenApi.unseal()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
-        System.loadLibrary("hiddenapibypass")
 
         createNotificationChannels()
     }
