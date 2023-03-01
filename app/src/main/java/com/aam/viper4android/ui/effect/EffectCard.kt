@@ -3,7 +3,10 @@ package com.aam.viper4android
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,7 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -35,8 +38,13 @@ fun EffectCard(
                     painter = icon, contentDescription = null
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                Text(name)
-                Spacer(Modifier.weight(1f))
+                Text(
+                    text = name,
+                    modifier = Modifier.weight(1f),
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.width(16.dp))
                 Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
             }
             expandedContent?.let {

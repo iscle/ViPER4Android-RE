@@ -1,13 +1,20 @@
 package com.aam.viper4android
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 
 @Composable
-fun StatusDialog(onDismissRequest: () -> Unit) {
+fun StatusDialog(viperManager: ViPERManager, onDismissRequest: () -> Unit) {
     AlertDialog(
         onDismissRequest = {
             // Dismiss the dialog when the user clicks outside the dialog or on the back
@@ -18,12 +25,32 @@ fun StatusDialog(onDismissRequest: () -> Unit) {
         title = {
             Text(text = "Status") },
         text = {
-            Column {
-                Text(text = "Driver version: v1.0.0")
-                Text(text = "Enabled: No")
-                Text(text = "Audio format: Unknown")
-                Text(text = "Processing: No")
-                Text(text = "Sampling rate: 48000 Hz")
+            val context = LocalContext.current
+            val scrollState = rememberScrollState()
+            Column(Modifier.verticalScroll(scrollState)) {
+                val activeSessions = viperManager.getActiveSessions()
+                if (activeSessions.isEmpty()) {
+                    Text(text = "No active sessions")
+                } else {
+                    activeSessions.forEachIndexed { index, activeSession ->
+                        Row {
+                            Column {
+                                if (index != 0) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Divider()
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                val label = AndroidUtils.getApplicationLabel(context, activeSession.packageName)
+                                Text(text = label, overflow = TextOverflow.Ellipsis, maxLines = 1, style = MaterialTheme.typography.labelLarge)
+                                Text(text = "Driver version: v1.0.0")
+                                Text(text = "Enabled: No")
+                                Text(text = "Audio format: Unknown")
+                                Text(text = "Processing: No")
+                                Text(text = "Sampling rate: 48000 Hz")
+                            }
+                        }
+                    }
+                }
             }
         },
         confirmButton = {

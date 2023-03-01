@@ -1,7 +1,14 @@
 package com.aam.viper4android.ui.activity
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -11,22 +18,28 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.aam.viper4android.MainViewModel
-import com.aam.viper4android.PresetDialog
-import com.aam.viper4android.StatusDialog
+import com.aam.viper4android.*
 import com.aam.viper4android.ui.effect.*
 import com.aam.viper4android.ui.theme.ViPER4AndroidTheme
+import com.google.firebase.crashlytics.FirebaseCrashlytics
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
+private const val TAG = "MainActivity"
+
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    companion object {
-        private const val TAG = "MainActivity"
-    }
+    @Inject lateinit var viperManager: ViPERManager
 
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -39,6 +52,42 @@ class MainActivity : ComponentActivity() {
                     MainScreen()
                 }
             }
+        }
+
+        requestIgnoreBatteryOptimizations()
+        Intent(this, ViPERService::class.java).let {
+            try {
+                ContextCompat.startForegroundService(this, it)
+            } catch (e: Exception) {
+                Log.e(TAG, "onCreate: Failed to start service", e)
+                FirebaseCrashlytics.getInstance().recordException(e)
+            }
+        }
+    }
+
+    // Required for creating foreground services with the app in the background
+    @SuppressLint("BatteryLife")
+    private fun requestIgnoreBatteryOptimizations() {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).also {
+                it.data = Uri.parse("package:$packageName")
+                try {
+                    startActivityForResult(it, 69)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to request ignore battery optimizations", e)
+                    FirebaseCrashlytics.getInstance().recordException(e)
+                }
+            }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == 69) {
+            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+            Log.d(TAG, "onActivityResult: Battery optimizations ignored: ${powerManager.isIgnoringBatteryOptimizations(packageName)}")
         }
     }
 
@@ -86,12 +135,32 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { /* do something */ },
-                            containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                        ) {
-                            Icon(Icons.Filled.PowerSettingsNew, "Localized description")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            var isEnabled by rememberSaveable { mutableStateOf(false) }
+                            FloatingActionButton(
+                                onClick = {
+                                    isEnabled = !isEnabled
+                                    if (isEnabled) {
+                                        lifecycleScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "ViPER4Android enabled",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    } else {
+                                        lifecycleScope.launch {
+                                            snackbarHostState.showSnackbar(
+                                                message = "ViPER4Android disabled",
+                                                duration = SnackbarDuration.Short
+                                            )
+                                        }
+                                    }
+                                },
+                                containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                                elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                            ) {
+                                Icon(Icons.Filled.PowerSettingsNew, "Localized description")
+                            }
                         }
                     }
                 )
@@ -144,7 +213,7 @@ class MainActivity : ComponentActivity() {
                     SpeakerOptimizationEffect()
                 }
                 if (openStatusDialog) {
-                    StatusDialog(onDismissRequest = { openStatusDialog = false })
+                    StatusDialog(viperManager = viperManager, onDismissRequest = { openStatusDialog = false })
                 }
                 if (openPresetDialog) {
                     PresetDialog(onDismissRequest = { openPresetDialog = false })
