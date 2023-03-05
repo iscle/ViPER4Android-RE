@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 fun EffectCard(
     icon: Painter,
     name: String,
-    enabled: Boolean,
-    onEnabledChange: (Boolean) -> Unit,
+    enabled: Boolean?,
+    onEnabledChange: ((Boolean) -> Unit)?,
     expandedContent: (@Composable BoxScope.() -> Unit)? = null
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -45,7 +45,7 @@ fun EffectCard(
                     maxLines = 1
                 )
                 Spacer(modifier = Modifier.width(16.dp))
-                Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
+                if (enabled != null && onEnabledChange != null) Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
             }
             expandedContent?.let {
                 AnimatedVisibility(visible = expanded) {

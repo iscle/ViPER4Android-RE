@@ -50,12 +50,12 @@ private val thresholdLimitSummaryValues = arrayOf(
 
 @Composable
 fun MasterLimiterEffect() {
-    var enabled by rememberSaveable { mutableStateOf(false) } // TODO: Move to state
     EffectCard(
         icon = painterResource(R.drawable.ic_power),
         name = "Master limiter",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
+        enabled = null,
+        onEnabledChange = null
+    ) {
         var outputGain by rememberSaveable { mutableStateOf(11) } // TODO: Move to state
         var outputPan by rememberSaveable { mutableStateOf(50) } // TODO: Move to state
         var thresholdLimit by rememberSaveable { mutableStateOf(5) } // TODO: Move to state

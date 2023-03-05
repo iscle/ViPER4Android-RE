@@ -4,34 +4,92 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
-import android.os.Build
+import android.media.audiofx.AudioEffect
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import com.aam.viper4android.ui.activity.MainActivity
+import androidx.mediarouter.media.MediaRouter
+import com.aam.viper4android.ktx.getDisplayName
+import com.aam.viper4android.persistence.ViPERSettings
+import com.aam.viper4android.util.AndroidUtils
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-private const val TAG = "ViPERService"
-
+@AndroidEntryPoint
 class ViPERService : Service() {
+    private val TAG = "ViPERService"
+    @Inject lateinit var viperManager: ViPERManager
+    @Inject lateinit var viperSettings: ViPERSettings
+
+    private val managerListener = object : ViPERManager.Listener {
+        override fun onSelectedMediaRouteChanged(viperManager: ViPERManager, route: MediaRouter.RouteInfo) {
+            updateNotification(route = route)
+        }
+
+        override fun onSessionsChanged(viperManager: ViPERManager, sessions: List<Session>) {
+            updateNotification(sessions = sessions)
+        }
+    }
+
+    private val settingsListener = object : ViPERSettings.Listener {
+        override fun onIsLegacyModeChanged(viperSettings: ViPERSettings, isLegacyMode: Boolean) {
+            updateNotification()
+        }
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand() called with: intent = $intent, flags = $flags, startId = $startId")
         
         startForeground(1, getNotification())
 
+        when (intent?.action) {
+            "android.media.action.OPEN_AUDIO_EFFECT_CONTROL_SESSION" -> {
+                val packageName = intent.getStringExtra("android.media.extra.PACKAGE_NAME") ?: ""
+                val sessionId = intent.getIntExtra("android.media.extra.AUDIO_SESSION", -1)
+                val contentType = intent.getIntExtra("android.media.extra.CONTENT_TYPE", AudioEffect.CONTENT_TYPE_MUSIC)
+
+                viperManager.addSession(packageName, sessionId, contentType)
+            }
+            "android.media.action.CLOSE_AUDIO_EFFECT_CONTROL_SESSION" -> {
+                val packageName = intent.getStringExtra("android.media.extra.PACKAGE_NAME") ?: ""
+                val sessionId = intent.getIntExtra("android.media.extra.AUDIO_SESSION", -1)
+
+                viperManager.removeSession(packageName, sessionId)
+            }
+        }
+
         return START_STICKY
     }
 
-    private fun getNotification(): Notification {
+    override fun onCreate() {
+        super.onCreate()
+        viperManager.addListener(managerListener)
+        viperSettings.addListener(settingsListener)
+    }
+
+    override fun onDestroy() {
+        viperManager.removeListener(managerListener)
+        viperSettings.removeListener(settingsListener)
+        super.onDestroy()
+    }
+
+    private fun updateNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()) {
+        val notification = getNotification(route, sessions)
+        startForeground(1, notification)
+    }
+
+    private fun getNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()): Notification {
         val pendingIntent = packageManager.getLaunchIntentForPackage(packageName).let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
         }
+        val text = if (viperSettings.isLegacyMode) "Legacy mode" else sessions.map {
+            AndroidUtils.getApplicationLabel(this, it.packageName)
+        }.distinct().joinToString().ifEmpty { "No active sessions" }
 
         return NotificationCompat.Builder(this, "services_channel")
-            .setContentTitle("ViPER4Android")
-            .setContentText("Service is running")
+            .setContentTitle("${route.getDisplayName()} connected")
+            .setContentText(text)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -42,7 +100,7 @@ class ViPERService : Service() {
             .build()
     }
 
-    override fun onBind(intent: Intent): IBinder {
-        TODO("Return the communication channel to the service.")
+    override fun onBind(intent: Intent): IBinder? {
+        throw UnsupportedOperationException("This service does not support binding")
     }
 }

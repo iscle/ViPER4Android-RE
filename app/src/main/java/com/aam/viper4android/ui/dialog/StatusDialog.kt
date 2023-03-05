@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.aam.viper4android.util.AndroidUtils
 
 @Composable
 fun StatusDialog(viperManager: ViPERManager, onDismissRequest: () -> Unit) {
@@ -28,7 +29,7 @@ fun StatusDialog(viperManager: ViPERManager, onDismissRequest: () -> Unit) {
             val context = LocalContext.current
             val scrollState = rememberScrollState()
             Column(Modifier.verticalScroll(scrollState)) {
-                val activeSessions = viperManager.getActiveSessions()
+                val activeSessions = viperManager.getCurrentSessions()
                 if (activeSessions.isEmpty()) {
                     Text(text = "No active sessions")
                 } else {

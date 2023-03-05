@@ -1,6 +1,7 @@
 package com.aam.viper4android
 
 import android.app.Application
+import com.aam.viper4android.util.HiddenApi
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
@@ -16,7 +17,6 @@ class ViPERApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
         createNotificationChannels()
     }
 

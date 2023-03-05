@@ -8,10 +8,10 @@ import java.util.*
 class ViPEREffect(audioSession: Int) {
     companion object {
         private val UUID_NULL = UUID.fromString("ec7178ec-e5e1-4432-a3f4-4657e6795210")
-        private val UUID_V4A = UUID.fromString("90380da3-8536-4744-a6a3-5731970e640f")
+        val VIPER_UUID = UUID.fromString("90380da3-8536-4744-a6a3-5731970e640f")
     }
 
-    private val audioEffect = AudioEffectKtx(UUID_NULL, UUID_V4A, 0, audioSession)
+    private val audioEffect = AudioEffectKtx(UUID_NULL, VIPER_UUID, 0, audioSession)
     private val actor = AudioEffectActor(audioEffect)
 
     val status = Status()

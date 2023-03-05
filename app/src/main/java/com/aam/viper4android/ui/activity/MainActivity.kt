@@ -98,8 +98,9 @@ class MainActivity : ComponentActivity() {
 
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
-        var openStatusDialog by remember { mutableStateOf(false) }
-        var openPresetDialog by remember { mutableStateOf(false) }
+        var viperEnabled by rememberSaveable { mutableStateOf(false) }
+        var openStatusDialog by rememberSaveable { mutableStateOf(false) }
+        var openPresetDialog by rememberSaveable { mutableStateOf(false) }
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -136,26 +137,8 @@ class MainActivity : ComponentActivity() {
                     },
                     floatingActionButton = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            var isEnabled by rememberSaveable { mutableStateOf(false) }
                             FloatingActionButton(
-                                onClick = {
-                                    isEnabled = !isEnabled
-                                    if (isEnabled) {
-                                        lifecycleScope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = "ViPER4Android enabled",
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
-                                    } else {
-                                        lifecycleScope.launch {
-                                            snackbarHostState.showSnackbar(
-                                                message = "ViPER4Android disabled",
-                                                duration = SnackbarDuration.Short
-                                            )
-                                        }
-                                    }
-                                },
+                                onClick = { viperEnabled = !viperEnabled },
                                 containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                             ) {
@@ -169,48 +152,54 @@ class MainActivity : ComponentActivity() {
         ) {
             Box(modifier = Modifier.padding(it)) {
                 val scrollState = rememberScrollState()
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState)
-                        .padding(8.dp)
-                ) {
-                    val effectSpacer = 8.dp
-                    MasterLimiterEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    PlaybackGainControlEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    FETCompressorEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    ViPERDDCEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    SpectrumExtensionEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    FIREqualizerEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    ConvolverEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    FieldSurroundEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    DifferentialSurroundEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    HeadphoneSurroundPlusEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    ReverberationEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    DynamicSystemEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    TubeSimulator6N1JEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    ViPERBassEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    ViPERClarityEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    AuditorySystemProtectionEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    AnalogXEffect()
-                    Spacer(modifier = Modifier.height(effectSpacer))
-                    SpeakerOptimizationEffect()
+                if (viperEnabled) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState)
+                            .padding(8.dp)
+                    ) {
+                        val effectSpacer = 8.dp
+                        MasterLimiterEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        PlaybackGainControlEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        FETCompressorEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        ViPERDDCEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        SpectrumExtensionEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        FIREqualizerEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        ConvolverEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        FieldSurroundEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        DifferentialSurroundEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        HeadphoneSurroundPlusEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        ReverberationEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        DynamicSystemEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        TubeSimulator6N1JEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        ViPERBassEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        ViPERClarityEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        AuditorySystemProtectionEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        AnalogXEffect()
+                        Spacer(modifier = Modifier.height(effectSpacer))
+                        SpeakerOptimizationEffect()
+                    }
+                } else {
+                    Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("ViPER is disabled.")
+                    }
                 }
                 if (openStatusDialog) {
                     StatusDialog(viperManager = viperManager, onDismissRequest = { openStatusDialog = false })
