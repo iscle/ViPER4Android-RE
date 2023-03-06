@@ -3,18 +3,21 @@ package com.aam.viper4android
 import android.content.Context
 import android.media.audiofx.AudioEffect
 import android.provider.Settings
+import android.util.Log
 import androidx.mediarouter.media.MediaControlIntent
 import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
+import com.aam.viper4android.persistence.ViPERDatabase
 import com.aam.viper4android.persistence.model.SavedSession
 import com.aam.viper4android.persistence.actor.SessionDaoActor
 import com.aam.viper4android.persistence.ViPERSettings
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ViPERManager @Inject constructor(@ApplicationContext context: Context, private val viperSettings: ViPERSettings, private val sessionDaoActor: SessionDaoActor) {
+class ViPERManager @Inject constructor(@ApplicationContext private val context: Context, private val viperSettings: ViPERSettings, private val viperDatabase: ViPERDatabase, private val sessionDaoActor: SessionDaoActor) {
     private val TAG = "ViPERManager"
     private val mediaRouter = MediaRouter.getInstance(context)
 
@@ -36,8 +39,53 @@ class ViPERManager @Inject constructor(@ApplicationContext context: Context, pri
         }
     }
 
+    private val settingsListener = object : ViPERSettings.Listener {
+        override fun onIsLegacyModeChanged(viperSettings: ViPERSettings, isLegacyMode: Boolean) {
+            if (isLegacyMode) {
+                sessions.forEach { it.release() }
+                sessions.clear()
+                addSessionSafe(context.packageName, 0, AudioEffect.CONTENT_TYPE_MUSIC)
+                listeners.forEach { it.onSessionsChanged(this@ViPERManager, getCurrentSessions()) }
+            } else {
+                sessions.clear()
+                CoroutineScope(Dispatchers.IO).launch {
+                    restoreDatabaseSessions()
+                    withContext(Dispatchers.Main) { listeners.forEach { it.onSessionsChanged(this@ViPERManager, getCurrentSessions()) } }
+                }
+            }
+        }
+    }
+
+    init {
+        runBlocking {
+            viperDatabase.sessionDao().deleteObsolete(bootCount)
+            if (!viperSettings.isLegacyMode) {
+                restoreDatabaseSessions()
+            }
+        }
+        viperSettings.addListener(settingsListener)
+    }
+
+    private suspend fun restoreDatabaseSessions() {
+        viperDatabase.sessionDao().getAll().forEach {
+            addSessionSafe(it.packageName, it.sessionId, it.contentType)
+        }
+    }
+
+    private fun addSessionSafe(packageName: String, sessionId: Int, contentType: Int) {
+        try {
+            sessions.add(Session(packageName, sessionId, contentType))
+        } catch (e: Exception) {
+            Log.e(TAG, "addSessionSafe: Failed to create Session", e)
+        }
+    }
+
     fun getIsViperAvailable(): Boolean {
         return isViperAvailable
+    }
+
+    fun hasSessions(): Boolean {
+        return sessions.isNotEmpty()
     }
 
     fun getSelectedMediaRoute(): MediaRouter.RouteInfo {
@@ -48,7 +96,7 @@ class ViPERManager @Inject constructor(@ApplicationContext context: Context, pri
         sessionDaoActor.insert(SavedSession(packageName, sessionId, contentType, bootCount))
         if (viperSettings.isLegacyMode) return
         if (sessions.find { it.packageName == packageName && it.sessionId == sessionId } != null) return
-        sessions.add(Session(packageName, sessionId))
+        addSessionSafe(packageName, sessionId, contentType)
         listeners.forEach { it.onSessionsChanged(this, getCurrentSessions()) }
     }
 

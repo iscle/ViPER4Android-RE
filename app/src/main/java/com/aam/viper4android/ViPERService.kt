@@ -1,6 +1,7 @@
 package com.aam.viper4android
 
 import android.app.Notification
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
@@ -9,6 +10,7 @@ import android.media.audiofx.AudioEffect
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.mediarouter.media.MediaRouter
 import com.aam.viper4android.ktx.getDisplayName
 import com.aam.viper4android.persistence.ViPERSettings
@@ -59,6 +61,10 @@ class ViPERService : Service() {
             }
         }
 
+        if (!viperManager.hasSessions()) {
+            stopSelf(startId)
+        }
+
         return START_STICKY
     }
 
@@ -76,7 +82,7 @@ class ViPERService : Service() {
 
     private fun updateNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()) {
         val notification = getNotification(route, sessions)
-        startForeground(1, notification)
+        NotificationManagerCompat.from(this).notify(1, notification)
     }
 
     private fun getNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()): Notification {
@@ -90,13 +96,15 @@ class ViPERService : Service() {
         return NotificationCompat.Builder(this, "services_channel")
             .setContentTitle("${route.getDisplayName()} connected")
             .setContentText(text)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
             .setColor(Color.parseColor("#6100ED"))
             .setOngoing(true)
+            .setShowWhen(false)
+            .setOnlyAlertOnce(true)
             .build()
     }
 
