@@ -1,15 +1,16 @@
 package com.aam.viper4android.persistence
 
-import com.aam.viper4android.persistence.model.ViPERSetting
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.aam.viper4android.persistence.actor.SettingsDaoActor
+import com.aam.viper4android.persistence.model.PersistedSetting
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ViPERSettings @Inject constructor(viperDatabase: ViPERDatabase) {
+class ViPERSettings @Inject constructor(
+    viperDatabase: ViPERDatabase,
+    private val settingsDaoActor: SettingsDaoActor,
+) {
     private val KEY_LEGACY_MODE = "legacy_mode"
 
     private val settingsDao = viperDatabase.settingsDao()
@@ -34,7 +35,7 @@ class ViPERSettings @Inject constructor(viperDatabase: ViPERDatabase) {
     private fun get(key: String): String? = settings[key]
     private fun set(key: String, value: String) {
         settings[key] = value
-        CoroutineScope(Dispatchers.IO).launch { settingsDao.insert(ViPERSetting(key, value)) }
+        settingsDaoActor.insert(PersistedSetting(key, value))
     }
 
     var isLegacyMode: Boolean

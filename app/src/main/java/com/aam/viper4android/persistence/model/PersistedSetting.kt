@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "settings")
-data class ViPERSetting(
+data class PersistedSetting(
     @PrimaryKey @ColumnInfo(name = "key") val key: String,
     @ColumnInfo(name = "value") val value: String,
 )

@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 
 @Entity(tableName = "sessions", primaryKeys = ["package_name", "session_id"])
-data class SavedSession(
+data class PersistedSession(
     @ColumnInfo(name = "package_name") val packageName: String,
     @ColumnInfo(name = "session_id") val sessionId: Int,
     @ColumnInfo(name = "content_type") val contentType: Int,

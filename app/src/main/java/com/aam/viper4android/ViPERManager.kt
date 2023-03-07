@@ -8,27 +8,38 @@ import androidx.mediarouter.media.MediaControlIntent
 import androidx.mediarouter.media.MediaRouteSelector
 import androidx.mediarouter.media.MediaRouter
 import com.aam.viper4android.persistence.ViPERDatabase
-import com.aam.viper4android.persistence.model.SavedSession
-import com.aam.viper4android.persistence.actor.SessionDaoActor
 import com.aam.viper4android.persistence.ViPERSettings
+import com.aam.viper4android.persistence.actor.SessionsDaoActor
+import com.aam.viper4android.persistence.model.PersistedSession
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ViPERManager @Inject constructor(@ApplicationContext private val context: Context, private val viperSettings: ViPERSettings, private val viperDatabase: ViPERDatabase, private val sessionDaoActor: SessionDaoActor) {
+class ViPERManager @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val viperSettings: ViPERSettings,
+    private val viperDatabase: ViPERDatabase,
+    private val sessionsDaoActor: SessionsDaoActor
+) {
     private val TAG = "ViPERManager"
     private val mediaRouter = MediaRouter.getInstance(context)
 
-    private val isViperAvailable = AudioEffect.queryEffects()?.any { it.uuid == ViPEREffect.VIPER_UUID } ?: false
-    private val bootCount = Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
+    private val isViperAvailable =
+        AudioEffect.queryEffects()?.any { it.uuid == ViPEREffect.VIPER_UUID } ?: false
+    private val bootCount =
+        Settings.Global.getInt(context.contentResolver, Settings.Global.BOOT_COUNT)
 
     private val sessions = mutableListOf<Session>()
     private val listeners = mutableListOf<Listener>()
 
     private val mediaRouterCallback = object : MediaRouter.Callback() {
-        override fun onRouteSelected(router: MediaRouter, route: MediaRouter.RouteInfo, reason: Int) {
+        override fun onRouteSelected(
+            router: MediaRouter,
+            route: MediaRouter.RouteInfo,
+            reason: Int
+        ) {
             listeners.forEach { it.onSelectedMediaRouteChanged(this@ViPERManager, route) }
         }
 
@@ -50,7 +61,14 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
                 sessions.clear()
                 CoroutineScope(Dispatchers.IO).launch {
                     restoreDatabaseSessions()
-                    withContext(Dispatchers.Main) { listeners.forEach { it.onSessionsChanged(this@ViPERManager, getCurrentSessions()) } }
+                    withContext(Dispatchers.Main) {
+                        listeners.forEach {
+                            it.onSessionsChanged(
+                                this@ViPERManager,
+                                getCurrentSessions()
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -58,7 +76,7 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
 
     init {
         runBlocking {
-            viperDatabase.sessionDao().deleteObsolete(bootCount)
+            viperDatabase.sessionsDao().deleteObsolete(bootCount)
             if (!viperSettings.isLegacyMode) {
                 restoreDatabaseSessions()
             }
@@ -67,7 +85,7 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     private suspend fun restoreDatabaseSessions() {
-        viperDatabase.sessionDao().getAll().forEach {
+        viperDatabase.sessionsDao().getAll().forEach {
             addSessionSafe(it.packageName, it.sessionId, it.contentType)
         }
     }
@@ -93,7 +111,7 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     fun addSession(packageName: String, sessionId: Int, contentType: Int) {
-        sessionDaoActor.insert(SavedSession(packageName, sessionId, contentType, bootCount))
+        sessionsDaoActor.insert(PersistedSession(packageName, sessionId, contentType, bootCount))
         if (viperSettings.isLegacyMode) return
         if (sessions.find { it.packageName == packageName && it.sessionId == sessionId } != null) return
         addSessionSafe(packageName, sessionId, contentType)
@@ -101,7 +119,7 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
     }
 
     fun removeSession(packageName: String, sessionId: Int) {
-        sessionDaoActor.delete(packageName, sessionId)
+        sessionsDaoActor.delete(packageName, sessionId)
         val session = sessions.find { it.packageName == packageName && it.sessionId == sessionId }
         if (session != null) {
             sessions.remove(session)
@@ -119,7 +137,11 @@ class ViPERManager @Inject constructor(@ApplicationContext private val context: 
             val selector = MediaRouteSelector.Builder()
                 .addControlCategory(MediaControlIntent.CATEGORY_LIVE_AUDIO)
                 .build()
-            mediaRouter.addCallback(selector, mediaRouterCallback, MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY)
+            mediaRouter.addCallback(
+                selector,
+                mediaRouterCallback,
+                MediaRouter.CALLBACK_FLAG_REQUEST_DISCOVERY
+            )
         }
         listeners.add(listener)
     }
