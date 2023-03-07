@@ -33,18 +33,18 @@ fun EffectCard(
                 .fillMaxWidth()
                 .clickable(enabled = expandedContent != null) { expanded = !expanded }
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically) {
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
                 Icon(
                     painter = icon, contentDescription = null
                 )
-                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = name,
                     modifier = Modifier.weight(1f),
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.width(16.dp))
                 if (enabled != null && onEnabledChange != null) Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
             }
             expandedContent?.let {
