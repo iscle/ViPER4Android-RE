@@ -13,4 +13,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "ViPER4Android"
-include ':app'
+include("app")
