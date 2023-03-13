@@ -2,9 +2,11 @@
 
 buildscript {
     extra.apply {
+        set("hilt_version", "2.45")
         set("compose_version", "1.3.3")
         set("nav_version", "2.5.3")
         set("room_version", "2.5.0")
+        set("lifecycle_version", "2.6.0")
     }
 
     dependencies {
