@@ -5,9 +5,12 @@ import androidx.compose.ui.res.painterResource
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 
+class SpeakerOptimizationState {
+    var enabled by mutableStateOf(false)
+}
+
 @Composable
-fun SpeakerOptimizationEffect() {
-    var enabled by remember { mutableStateOf(false) }
-    EffectCard(icon = painterResource(R.drawable.ic_speaker), name = "Speaker optimization", enabled = enabled, onEnabledChange = { enabled = it })
+fun SpeakerOptimizationEffect(state: SpeakerOptimizationState) {
+    EffectCard(icon = painterResource(R.drawable.ic_speaker), name = "Speaker optimization", enabled = state.enabled, onEnabledChange = { state.enabled = it })
 
 }

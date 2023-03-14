@@ -8,21 +8,24 @@ import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 
+class SpectrumExtensionState {
+    var enabled by mutableStateOf(false)
+    var strength by mutableStateOf(10)
+}
+
 @Composable
-fun SpectrumExtensionEffect() {
-    var enabled by remember { mutableStateOf(false) }
+fun SpectrumExtensionEffect(state: SpectrumExtensionState) {
     EffectCard(
         icon = painterResource(R.drawable.ic_vse),
         name = "Spectrum extension",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
-        var strength by rememberSaveable { mutableStateOf(10) }  // TODO: Move to state
+        enabled = state.enabled,
+        onEnabledChange = { state.enabled = it }) {
         Column {
             ValueSlider(
                 title = "Strength",
                 summaryUnit = "%",
-                value = strength,
-                onValueChange = { strength = it },
+                value = state.strength,
+                onValueChange = { state.strength = it },
                 valueRange = 0..100
             )
         }

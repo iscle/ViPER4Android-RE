@@ -13,35 +13,38 @@ import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 import com.aam.viper4android.ui.component.ValuePicker
 
+class ViPERBassState {
+    var enabled by mutableStateOf(false)
+    var bassMode by mutableStateOf(0)
+    var bassFrequency by mutableStateOf(55)
+    var bassGain by mutableStateOf(0)
+}
+
 @Composable
-fun ViPERBassEffect() {
-    var enabled by remember { mutableStateOf(false) }
-    EffectCard(icon = painterResource(R.drawable.ic_bass), name = "ViPER bass", enabled = enabled, onEnabledChange = { enabled = it }) {
-        var bassMode by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
-        var bassFrequency by rememberSaveable { mutableStateOf(55) } // TODO: Move to state
-        var bassGain by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
+fun ViPERBassEffect(state: ViPERBassState) {
+    EffectCard(icon = painterResource(R.drawable.ic_bass), name = "ViPER bass", enabled = state.enabled, onEnabledChange = { state.enabled = it }) {
         Column {
             ValuePicker(
                 title = "Bass mode",
                 values = arrayOf("Natural bass", "Pure bass +", "Subwoofer"),
-                selectedIndex = bassMode,
-                onSelectedIndexChange = { bassMode = it }
+                selectedIndex = state.bassMode,
+                onSelectedIndexChange = { state.bassMode = it }
             )
             Spacer(modifier = Modifier.height(8.dp))
             ValueSlider(
                 title = "Bass frequency",
-                summary = (bassFrequency + 15).toString(),
+                summary = (state.bassFrequency + 15).toString(),
                 summaryUnit = "Hz",
-                value = bassFrequency,
-                onValueChange = { bassFrequency = it },
+                value = state.bassFrequency,
+                onValueChange = { state.bassFrequency = it },
                 valueRange = 0..135
             )
             ValueSlider(
                 title = "Bass gain",
-                summary = (bassGain + 1).toString(),
+                summary = (state.bassGain + 1).toString(),
                 summaryUnit = "dB",
-                value = bassGain,
-                onValueChange = { bassGain = it },
+                value = state.bassGain,
+                onValueChange = { state.bassGain = it },
                 valueRange = 0..11
             )
         }

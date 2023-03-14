@@ -5,14 +5,17 @@ import androidx.compose.ui.res.painterResource
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 
+class FIREqualizerState {
+    var enabled by mutableStateOf(false)
+}
+
 @Composable
-fun FIREqualizerEffect() {
-    var enabled by remember { mutableStateOf(false) }
+fun FIREqualizerEffect(state: FIREqualizerState) {
     EffectCard(
         icon = painterResource(R.drawable.ic_equalizer),
         name = "FIR equalizer",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
+        enabled = state.enabled,
+        onEnabledChange = { state.enabled = it }) {
 
     }
 }

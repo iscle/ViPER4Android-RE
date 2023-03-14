@@ -5,9 +5,12 @@ import androidx.compose.ui.res.painterResource
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 
+class AuditorySystemProtectionState {
+    var enabled by mutableStateOf(false)
+}
+
 @Composable
-fun AuditorySystemProtectionEffect() {
-    var enabled by remember { mutableStateOf(false) }
-    EffectCard(icon = painterResource(R.drawable.ic_protection), name = "Auditory system protection", enabled = enabled, onEnabledChange = { enabled = it })
+fun AuditorySystemProtectionEffect(state: AuditorySystemProtectionState) {
+    EffectCard(icon = painterResource(R.drawable.ic_protection), name = "Auditory system protection", enabled = state.enabled, onEnabledChange = { state.enabled = it })
 
 }

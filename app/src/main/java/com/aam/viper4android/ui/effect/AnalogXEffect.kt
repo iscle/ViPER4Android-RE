@@ -8,17 +8,20 @@ import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 
+class AnalogXState {
+    var enabled by mutableStateOf(false)
+    var level by mutableStateOf(0)
+}
+
 @Composable
-fun AnalogXEffect() {
-    var enabled by remember { mutableStateOf(false) }
-    EffectCard(icon = painterResource(R.drawable.ic_analogx), name = "AnalogX", enabled = enabled, onEnabledChange = { enabled = it }) {
-        var level by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
+fun AnalogXEffect(state: AnalogXState) {
+    EffectCard(icon = painterResource(R.drawable.ic_analogx), name = "AnalogX", enabled = state.enabled, onEnabledChange = { state.enabled = it }) {
         Column {
             ValueSlider(
                 title = "Level",
-                summary = (level + 1).toString(),
-                value = level,
-                onValueChange = { level = it },
+                summary = (state.level + 1).toString(),
+                value = state.level,
+                onValueChange = { state.level = it },
                 valueRange = 0..2
             )
         }

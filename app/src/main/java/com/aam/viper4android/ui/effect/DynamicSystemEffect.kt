@@ -9,15 +9,18 @@ import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 import com.aam.viper4android.ui.component.ValuePicker
 
+class DynamicSystemState {
+    var enabled by mutableStateOf(false)
+    var deviceType by mutableStateOf(0)
+    var dynamicBassStrength by mutableStateOf(0)
+}
+
 @Composable
-fun DynamicSystemEffect() {
-    var enabled by remember { mutableStateOf(false) }
+fun DynamicSystemEffect(state: DynamicSystemState) {
     EffectCard(icon = painterResource(R.drawable.ic_dynamic_system),
         name = "Dynamic system",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
-        var deviceType by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
-        var dynamicBassStrength by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
+        enabled = state.enabled,
+        onEnabledChange = { state.enabled = it }) {
         Column {
             ValuePicker(title = "Device type", values = arrayOf(
                 "Extreme headphone(v2)",
@@ -29,12 +32,12 @@ fun DynamicSystemEffect() {
                 "High-end headphone(v1)",
                 "Common headphone(v1)",
                 "Common earphone(v1)"
-            ), selectedIndex = deviceType, onSelectedIndexChange = { deviceType = it })
+            ), selectedIndex = state.deviceType, onSelectedIndexChange = { state.deviceType = it })
             ValueSlider(
                 title = "Dynamic bass strength",
                 summaryUnit = "%",
-                value = dynamicBassStrength,
-                onValueChange = { dynamicBassStrength = it },
+                value = state.dynamicBassStrength,
+                onValueChange = { state.dynamicBassStrength = it },
                 valueRange = 0..100
             )
         }

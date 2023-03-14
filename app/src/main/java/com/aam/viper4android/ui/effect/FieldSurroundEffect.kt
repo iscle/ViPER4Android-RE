@@ -8,29 +8,32 @@ import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 
+class FieldSurroundState {
+    var enabled by mutableStateOf(false)
+    var surroundStrength by mutableStateOf(0)
+    var midImageStrength by mutableStateOf(5)
+}
+
 @Composable
-fun FieldSurroundEffect() {
-    var enabled by remember { mutableStateOf(false) }
+fun FieldSurroundEffect(state: FieldSurroundState) {
     EffectCard(
         icon = painterResource(R.drawable.ic_surround),
         name = "Field surround",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
-        var surroundStrength by rememberSaveable { mutableStateOf(0) } // TODO: Move to state
-        var midImageStrength by rememberSaveable { mutableStateOf(5) } // TODO: Move to state
+        enabled = state.enabled,
+        onEnabledChange = { state.enabled = it }) {
         Column {
             ValueSlider(
                 title = "Surround strength",
-                summary = (surroundStrength + 1).toString(),
-                value = surroundStrength,
-                onValueChange = { surroundStrength = it },
+                summary = (state.surroundStrength + 1).toString(),
+                value = state.surroundStrength,
+                onValueChange = { state.surroundStrength = it },
                 valueRange = 0..8
             )
             ValueSlider(
                 title = "Mid image strength",
-                summary = (midImageStrength + 1).toString(),
-                value = midImageStrength,
-                onValueChange = { midImageStrength = it },
+                summary = (state.midImageStrength + 1).toString(),
+                value = state.midImageStrength,
+                onValueChange = { state.midImageStrength = it },
                 valueRange = 0..10
             )
         }

@@ -8,22 +8,25 @@ import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 
+class DifferentialSurroundState {
+    var enabled by mutableStateOf(false)
+    var delay by mutableStateOf(4)
+}
+
 @Composable
-fun DifferentialSurroundEffect() {
-    var enabled by remember { mutableStateOf(false) }
+fun DifferentialSurroundEffect(state: DifferentialSurroundState) {
     EffectCard(
         icon = painterResource(R.drawable.ic_surround),
         name = "Differential surround",
-        enabled = enabled,
-        onEnabledChange = { enabled = it }) {
-        var delay by rememberSaveable { mutableStateOf(4) } // TODO: Move to state
+        enabled = state.enabled,
+        onEnabledChange = { state.enabled = it }) {
         Column {
             ValueSlider(
                 title = "Delay",
-                summary = (delay + 1).toString(),
+                summary = (state.delay + 1).toString(),
                 summaryUnit = "ms",
-                value = delay,
-                onValueChange = { delay = it },
+                value = state.delay,
+                onValueChange = { state.delay = it },
                 valueRange = 0..19
             )
         }
