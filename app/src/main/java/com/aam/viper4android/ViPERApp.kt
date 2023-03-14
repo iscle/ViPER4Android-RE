@@ -10,6 +10,7 @@ import dagger.hilt.android.HiltAndroidApp
 @HiltAndroidApp
 class ViPERApp : Application() {
     companion object {
+        const val SERVICES_CHANNEL_ID = "services_channel"
         init {
             HiddenApi.unseal()
         }
@@ -22,7 +23,9 @@ class ViPERApp : Application() {
 
     private fun createNotificationChannels() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val mChannel = NotificationChannel("services_channel", "Services", NotificationManager.IMPORTANCE_LOW)
+            val mChannel = NotificationChannel(SERVICES_CHANNEL_ID, getString(R.string.viper_notification_channel_services_name), NotificationManager.IMPORTANCE_LOW).also {
+                it.description = getString(R.string.viper_notification_channel_services_description)
+            }
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(mChannel)
         }

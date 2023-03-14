@@ -93,7 +93,7 @@ class ViPERService : Service() {
             AndroidUtils.getApplicationLabel(this, it.packageName)
         }.distinct().joinToString().ifEmpty { "No active sessions" }
 
-        return NotificationCompat.Builder(this, "services_channel")
+        return NotificationCompat.Builder(this, ViPERApp.SERVICES_CHANNEL_ID)
             .setContentTitle("${route.getDisplayName()} connected")
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)

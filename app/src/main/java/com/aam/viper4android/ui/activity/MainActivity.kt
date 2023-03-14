@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -24,14 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.*
 import com.aam.viper4android.ui.effect.*
 import com.aam.viper4android.ui.theme.ViPER4AndroidTheme
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 private const val TAG = "MainActivity"
@@ -93,9 +90,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun MainScreen(mainViewModel: MainViewModel = viewModel()) {
-        val effectState = mainViewModel.uiState.collectAsState()
-
+    fun MainScreen(
+        mainViewModel: MainViewModel = viewModel()
+    ) {
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         var viperEnabled by rememberSaveable { mutableStateOf(false) }
@@ -160,7 +157,7 @@ class MainActivity : ComponentActivity() {
                             .padding(8.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        MasterLimiterEffect()
+                        MasterLimiterEffect(state = mainViewModel.masterLimiterState)
                         PlaybackGainControlEffect()
                         FETCompressorEffect()
                         ViPERDDCEffect()

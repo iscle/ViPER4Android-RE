@@ -3,8 +3,10 @@ package com.aam.viper4android.ui.effect
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -48,41 +50,44 @@ private val thresholdLimitSummaryValues = arrayOf(
     "0.0"
 )
 
+class MasterLimiterState {
+    var outputGain by mutableStateOf(11)
+    var outputPan by mutableStateOf(50)
+    var thresholdLimit by mutableStateOf(5)
+}
+
 @Composable
-fun MasterLimiterEffect() {
+fun MasterLimiterEffect(state: MasterLimiterState) {
     EffectCard(
         icon = painterResource(R.drawable.ic_power),
         name = "Master limiter",
         enabled = null,
         onEnabledChange = null
     ) {
-        var outputGain by rememberSaveable { mutableStateOf(11) } // TODO: Move to state
-        var outputPan by rememberSaveable { mutableStateOf(50) } // TODO: Move to state
-        var thresholdLimit by rememberSaveable { mutableStateOf(5) } // TODO: Move to state
         Column {
             ValueSlider(
                 title = "Output gain",
-                summary = outputGainSummaryValues[outputGain],
+                summary = outputGainSummaryValues[state.outputGain],
                 summaryUnit = "dB",
-                value = outputGain,
-                onValueChange = { outputGain = it },
+                value = state.outputGain,
+                onValueChange = { state.outputGain = it },
                 valueRange = outputGainSummaryValues.indices
             )
             Spacer(modifier = Modifier.height(8.dp))
             ValueSlider(
                 title = "Output pan",
-                summary = "${100 - outputPan}:${outputPan}",
-                value = outputPan,
-                onValueChange = { outputPan = it },
+                summary = "${100 - state.outputPan}:${state.outputPan}",
+                value = state.outputPan,
+                onValueChange = { state.outputPan = it },
                 valueRange = 0..100
             )
             Spacer(modifier = Modifier.height(8.dp))
             ValueSlider(
                 title = "Threshold limit",
-                value = thresholdLimit,
-                summary = thresholdLimitSummaryValues[thresholdLimit],
+                value = state.thresholdLimit,
+                summary = thresholdLimitSummaryValues[state.thresholdLimit],
                 summaryUnit = "dB",
-                onValueChange = { thresholdLimit = it },
+                onValueChange = { state.thresholdLimit = it },
                 valueRange = 0..5
             )
         }
