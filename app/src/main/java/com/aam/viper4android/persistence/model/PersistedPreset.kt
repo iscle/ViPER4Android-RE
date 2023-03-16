@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "presets")
 data class PersistedPreset(
     @PrimaryKey @ColumnInfo(name = "device_id") val deviceId: String,
+    @ColumnInfo(name = "enabled") val enabled: Boolean,
     @Embedded(prefix = "analog_x") val analogX: AnalogX,
     @Embedded(prefix = "auditory_system_protection") val auditorySystemProtection: AuditorySystemProtection,
     @Embedded(prefix = "convolver") val convolver: Convolver,

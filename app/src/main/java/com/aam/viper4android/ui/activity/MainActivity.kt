@@ -33,6 +33,10 @@ import javax.inject.Inject
 
 private const val TAG = "MainActivity"
 
+class ViPERState {
+    var enabled by mutableStateOf(false)
+}
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var viperManager: ViPERManager
@@ -94,8 +98,6 @@ class MainActivity : ComponentActivity() {
         mainViewModel: MainViewModel = viewModel()
     ) {
         val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
-        var viperEnabled by rememberSaveable { mutableStateOf(false) }
         var openStatusDialog by rememberSaveable { mutableStateOf(false) }
         var openPresetDialog by rememberSaveable { mutableStateOf(false) }
         Scaffold(
@@ -135,7 +137,7 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             FloatingActionButton(
-                                onClick = { viperEnabled = !viperEnabled },
+                                onClick = { mainViewModel.viperState.enabled = !mainViewModel.viperState.enabled },
                                 containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                             ) {
@@ -149,7 +151,7 @@ class MainActivity : ComponentActivity() {
         ) {
             Box(modifier = Modifier.padding(it)) {
                 val scrollState = rememberScrollState()
-                if (viperEnabled) {
+                if (mainViewModel.viperState.enabled) {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()

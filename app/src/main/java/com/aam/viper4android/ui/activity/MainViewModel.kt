@@ -2,8 +2,10 @@ package com.aam.viper4android.ui.activity
 
 import android.util.Log
 import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aam.viper4android.Preset
 import com.aam.viper4android.ViPERManager
 import com.aam.viper4android.ui.effect.*
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,6 +19,7 @@ class MainViewModel @Inject constructor(
 ) : ViewModel() {
     private val TAG = "MainViewModel"
 
+    val viperState = ViPERState()
     val masterLimiterState = MasterLimiterState()
     val spectrumExtensionState = SpectrumExtensionState()
     val firEqualizerState = FIREqualizerState()
@@ -30,7 +33,16 @@ class MainViewModel @Inject constructor(
     val analogXState = AnalogXState()
     val speakerOptimizationState = SpeakerOptimizationState()
 
+    private val viperManagerListener = object : ViPERManager.Listener() {
+        override fun onPresetChanged(viperManager: ViPERManager, preset: Preset) {
+            setPreset(preset)
+        }
+    }
+
     init {
+        registerPresetListener()
+        setPreset(viperManager.getCurrentPreset())
+        observeViPER()
         observeMasterLimiter()
         observeSpectrumExtension()
         observeFIREqualizer()
@@ -43,6 +55,61 @@ class MainViewModel @Inject constructor(
         observeAuditorySystemProtection()
         observeAnalogX()
         observeSpeakerOptimization()
+    }
+
+    private fun registerPresetListener() {
+        viperManager.addListener(viperManagerListener)
+        addCloseable { viperManager.removeListener(viperManagerListener) }
+    }
+
+    private fun setPreset(preset: Preset) {
+        viperState.enabled = preset.enabled
+
+        masterLimiterState.outputGain = preset.masterLimiter.outputGain
+        masterLimiterState.outputPan = preset.masterLimiter.outputPan
+        masterLimiterState.thresholdLimit = preset.masterLimiter.thresholdLimit
+
+        spectrumExtensionState.enabled = preset.spectrumExtension.enabled
+        spectrumExtensionState.strength = preset.spectrumExtension.strength
+
+        firEqualizerState.enabled = preset.firEqualizer.enabled
+
+        fieldSurroundState.enabled = preset.fieldSurround.enabled
+        fieldSurroundState.surroundStrength = preset.fieldSurround.surroundStrength
+        fieldSurroundState.midImageStrength = preset.fieldSurround.midImageStrength
+
+        differentialSurroundState.enabled = preset.differentialSurround.enabled
+        differentialSurroundState.delay = preset.differentialSurround.delay
+
+        dynamicSystemState.enabled = preset.dynamicSystem.enabled
+        dynamicSystemState.deviceType = preset.dynamicSystem.deviceType
+        dynamicSystemState.dynamicBassStrength = preset.dynamicSystem.dynamicBassStrength
+
+        tubeSimulator6N1JState.enabled = preset.tubeSimulator6N1J.enabled
+
+        viperBassState.enabled = preset.viperBass.enabled
+        viperBassState.bassMode = preset.viperBass.bassMode
+        viperBassState.bassFrequency = preset.viperBass.bassFrequency
+        viperBassState.bassGain = preset.viperBass.bassGain
+
+        viperClarityState.enabled = preset.viperClarity.enabled
+        viperClarityState.clarityMode = preset.viperClarity.clarityMode
+        viperClarityState.clarityGain = preset.viperClarity.clarityGain
+
+        auditorySystemProtectionState.enabled = preset.auditorySystemProtection.enabled
+
+        analogXState.enabled = preset.analogX.enabled
+        analogXState.level = preset.analogX.level
+
+        speakerOptimizationState.enabled = preset.speakerOptimization.enabled
+    }
+
+    private fun observeViPER() {
+        snapshotFlow { viperState.enabled }
+            .onEach {
+                Log.d(TAG, "observeViPER: enabled: $it")
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun observeMasterLimiter() {

@@ -24,7 +24,7 @@ class ViPERService : Service() {
     @Inject lateinit var viperManager: ViPERManager
     @Inject lateinit var viperSettings: ViPERSettings
 
-    private val managerListener = object : ViPERManager.Listener {
+    private val managerListener = object : ViPERManager.Listener() {
         override fun onSelectedMediaRouteChanged(viperManager: ViPERManager, route: MediaRouter.RouteInfo) {
             updateNotification(route = route)
         }

@@ -110,6 +110,10 @@ class ViPERManager @Inject constructor(
         return mediaRouter.selectedRoute
     }
 
+    fun getCurrentPreset(): Preset {
+        return Preset(enabled = true)
+    }
+
     fun addSession(packageName: String, sessionId: Int, contentType: Int) {
         sessionsDaoActor.insert(PersistedSession(packageName, sessionId, contentType, bootCount))
         if (viperSettings.isLegacyMode) return
@@ -155,8 +159,9 @@ class ViPERManager @Inject constructor(
         }
     }
 
-    interface Listener {
-        fun onSelectedMediaRouteChanged(viperManager: ViPERManager, route: MediaRouter.RouteInfo)
-        fun onSessionsChanged(viperManager: ViPERManager, sessions: List<Session>)
+    open class Listener {
+        open fun onSelectedMediaRouteChanged(viperManager: ViPERManager, route: MediaRouter.RouteInfo) {}
+        open fun onSessionsChanged(viperManager: ViPERManager, sessions: List<Session>) {}
+        open fun onPresetChanged(viperManager: ViPERManager, preset: Preset) {}
     }
 }
