@@ -19,15 +19,8 @@
         android:theme="@style/Theme.ViPER4Android"
         tools:targetApi="31">
         <activity
-            android:name=".ui.activity.SettingsActivity"
-            android:exported="false"
-            android:label="@string/title_activity_settings"
-            android:theme="@style/Theme.ViPER4Android" />
-
-        <activity
             android:name=".ui.activity.MainActivity"
-            android:exported="true"
-            android:theme="@style/Theme.ViPER4Android">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

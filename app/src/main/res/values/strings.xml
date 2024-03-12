@@ -3,4 +3,7 @@
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="viper_notification_channel_services_name">Services</string>
     <string name="viper_notification_channel_services_description">Notification channel for ViPER services</string>
+    <string name="legacy_mode">Legacy mode</string>
+    <string name="no_active_sessions">No active sessions</string>
+    <string name="device_connected">%1$s connected</string>
 </resources>
