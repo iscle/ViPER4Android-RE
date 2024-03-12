@@ -60,7 +60,6 @@ android {
 }
 
 dependencies {
-    implementation("androidx.lifecycle:lifecycle-service:2.7.0")
     val hiltVersion = rootProject.extra.get("hilt_version") as String
     val composeVersion = rootProject.extra.get("compose_version") as String
     val navVersion = rootProject.extra.get("nav_version") as String
@@ -87,8 +86,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("androidx.navigation:navigation-compose:$navVersion")
     implementation("androidx.mediarouter:mediarouter:1.6.0")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.4"))
@@ -100,7 +97,12 @@ dependencies {
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
 
+    implementation("androidx.lifecycle:lifecycle-service:2.7.0")
+
+    // Test
     testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
 kapt {

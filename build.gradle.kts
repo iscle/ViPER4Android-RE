@@ -2,7 +2,7 @@
 
 buildscript {
     extra.apply {
-        set("hilt_version", "2.49")
+        set("hilt_version", "2.51")
         set("compose_version", "1.6.3")
         set("nav_version", "2.7.7")
         set("room_version", "2.6.1")
@@ -18,7 +18,7 @@ buildscript {
 plugins {
     id("com.android.application") version "8.3.0" apply false
     id("com.android.library") version "8.3.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.23" apply false
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
     id("com.google.dagger.hilt.android") version "2.51" apply false
-    id("com.google.devtools.ksp") version "1.9.23-1.0.19"
+    id("com.google.devtools.ksp") version "1.9.22-1.0.17"
 }
