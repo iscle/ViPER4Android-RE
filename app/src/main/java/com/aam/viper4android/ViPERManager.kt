@@ -58,7 +58,7 @@ class ViPERManager @Inject constructor(
     }
 
     private fun observeMediaRouter() {
-        scope.launch {
+        scope.launch(Dispatchers.Main) {
             callbackFlow {
                 val callback = object : MediaRouter.Callback() {
                     override fun onRouteSelected(
@@ -78,6 +78,7 @@ class ViPERManager @Inject constructor(
 
                 val selector = MediaRouteSelector.Builder()
                     .addControlCategory(MediaControlIntent.CATEGORY_LIVE_AUDIO)
+                    .addControlCategory(MediaControlIntent.CATEGORY_LIVE_VIDEO)
                     .build()
                 mediaRouter.addCallback(selector, callback, 0)
 

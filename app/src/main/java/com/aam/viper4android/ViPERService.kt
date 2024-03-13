@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.media.audiofx.AudioEffect
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
@@ -17,6 +18,7 @@ import com.aam.viper4android.util.AndroidUtils
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,10 +27,12 @@ class ViPERService : LifecycleService() {
     @Inject lateinit var viperManager: ViPERManager
     @Inject lateinit var viperSettings: ViPERSettings
 
-    private var isForeground = false
     private val intentsFlow = MutableSharedFlow<Intent>(
         extraBufferCapacity = Int.MAX_VALUE,
     )
+
+    private var foreground = false
+    private var lastStartId = -1;
 
     // todo: add callback or something to update the notification when a session is added or removed or legacy mode is toggled
 
@@ -41,7 +45,7 @@ class ViPERService : LifecycleService() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
 
-        if (!isForeground) {
+        if (!foreground) {
             try {
                 ServiceCompat.startForeground(
                     this,
@@ -49,13 +53,16 @@ class ViPERService : LifecycleService() {
                     getNotification(),
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
                 )
-                isForeground = true
+                Log.d(TAG, "onStartCommand: Started foreground service")
+                foreground = true
             } catch (e: Exception) {
+                Log.e(TAG, "onStartCommand: Failed to start foreground service", e)
                 FirebaseCrashlytics.getInstance().recordException(e)
             }
         }
 
         if (intent != null) {
+            intent.putExtra(EXTRA_START_ID, startId)
             intentsFlow.tryEmit(intent)
         }
 
@@ -69,6 +76,9 @@ class ViPERService : LifecycleService() {
     }
 
     private suspend fun handleIntent(intent: Intent) {
+        val startId = intent.getIntExtra(EXTRA_START_ID, -1)
+        if (startId != -1) lastStartId = startId
+
         when (intent.action) {
             AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION -> {
                 val packageName = intent.getStringExtra(AudioEffect.EXTRA_PACKAGE_NAME)
@@ -89,8 +99,13 @@ class ViPERService : LifecycleService() {
         lifecycleScope.launch {
             viperManager.waitForReady()
             viperManager.currentSessions.collect { sessions ->
+                // todo: stop service when started without an intent that modifies the sessions
                 if (sessions.isEmpty()) {
-                    stopSelf()
+                    val startId = lastStartId
+                    if (startId != -1) {
+                        Log.d(TAG, "collectSessions: No active sessions, stopping service")
+                        stopSelf(startId)
+                    }
                 } else {
                     updateNotification()
                 }
@@ -142,6 +157,8 @@ class ViPERService : LifecycleService() {
     }
 
     companion object {
+        private const val TAG = "ViPERService"
         private const val SERVICE_NOTIFICATION_ID = 1
+        private const val EXTRA_START_ID = "startId"
     }
 }
