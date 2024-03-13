@@ -1,15 +1,20 @@
 package com.aam.viper4android.ui.activity
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -22,9 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.aam.viper4android.*
+import com.aam.viper4android.PresetDialog
+import com.aam.viper4android.StatusDialog
+import com.aam.viper4android.ViPERManager
+import com.aam.viper4android.ViPERService
 import com.aam.viper4android.ui.effect.*
 import com.aam.viper4android.ui.theme.ViPER4AndroidTheme
 import com.google.firebase.crashlytics.FirebaseCrashlytics
@@ -55,6 +64,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        requestNotificationPermissions()
         requestIgnoreBatteryOptimizations()
         Intent(this, ViPERService::class.java).let {
             try {
@@ -66,30 +76,34 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun requestNotificationPermissions() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) return
+
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            Log.d(TAG, "requestNotificationPermissions() result called with: isGranted = $isGranted")
+        }.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     // Required for creating foreground services with the app in the background
     @SuppressLint("BatteryLife")
     private fun requestIgnoreBatteryOptimizations() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).also {
-                it.data = Uri.parse("package:$packageName")
-                try {
-                    startActivityForResult(it, 69)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Failed to request ignore battery optimizations", e)
-                    FirebaseCrashlytics.getInstance().recordException(e)
+        if (powerManager.isIgnoringBatteryOptimizations(packageName)) return
+
+        registerForActivityResult(object : ActivityResultContract<Unit, Boolean>() {
+            override fun createIntent(context: Context, input: Unit): Intent {
+                return Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).also {
+                    it.data = Uri.parse("package:$packageName")
                 }
             }
-        }
-    }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == 69) {
-            val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
-            Log.d(TAG, "onActivityResult: Battery optimizations ignored: ${powerManager.isIgnoringBatteryOptimizations(packageName)}")
-        }
+            override fun parseResult(resultCode: Int, intent: Intent?): Boolean {
+                return powerManager.isIgnoringBatteryOptimizations(packageName)
+            }
+        }) { isIgnoringBatteryOptimizations ->
+            Log.d(TAG, "requestIgnoreBatteryOptimizations: Battery optimizations ignored: $isIgnoringBatteryOptimizations")
+        }.launch(Unit)
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -194,21 +208,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun openSettingsActivity() {
-        Intent(this, SettingsActivity::class.java).also {
-            startActivity(it)
-        }
+//        Intent(this, SettingsActivity::class.java).also {
+//            startActivity(it)
+//        }
     }
 }
-
-//@Composable
-//fun Greeting(name: String) {
-//    Text(text = "Hello $name!")
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    ViPER4AndroidTheme {
-//        Greeting("Android")
-//    }
-//}

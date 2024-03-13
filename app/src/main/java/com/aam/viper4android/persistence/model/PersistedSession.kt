@@ -7,6 +7,5 @@ import androidx.room.Entity
 data class PersistedSession(
     @ColumnInfo(name = "package_name") val packageName: String,
     @ColumnInfo(name = "session_id") val sessionId: Int,
-    @ColumnInfo(name = "content_type") val contentType: Int,
     @ColumnInfo(name = "boot_count") val bootCount: Int,
 )

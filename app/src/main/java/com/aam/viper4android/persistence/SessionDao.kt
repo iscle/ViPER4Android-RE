@@ -7,7 +7,7 @@ import androidx.room.Query
 import com.aam.viper4android.persistence.model.PersistedSession
 
 @Dao
-interface SessionsDao {
+interface SessionDao {
     // Get all sessions
     @Query("SELECT * FROM sessions")
     suspend fun getAll(): List<PersistedSession>

@@ -13,11 +13,7 @@ private const val TAG = "BootCompletedReceiver"
 class BootCompletedReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) return
-
-        if (intent.action != Intent.ACTION_BOOT_COMPLETED) {
-            Log.d(TAG, "onReceive: Invalid action: ${intent.action}")
-            return
-        }
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
 
         Intent(context, ViPERService::class.java).let {
             try {

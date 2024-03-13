@@ -1,100 +1,126 @@
 package com.aam.viper4android
 
+import android.annotation.SuppressLint
 import android.app.Notification
-import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Intent
+import android.content.pm.ServiceInfo
 import android.graphics.Color
 import android.media.audiofx.AudioEffect
-import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.mediarouter.media.MediaRouter
-import com.aam.viper4android.ktx.getDisplayName
+import androidx.core.app.ServiceCompat
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.lifecycleScope
 import com.aam.viper4android.persistence.ViPERSettings
 import com.aam.viper4android.util.AndroidUtils
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ViPERService : Service() {
-    private val TAG = "ViPERService"
+class ViPERService : LifecycleService() {
     @Inject lateinit var viperManager: ViPERManager
     @Inject lateinit var viperSettings: ViPERSettings
 
-    private val managerListener = object : ViPERManager.Listener() {
-        override fun onSelectedMediaRouteChanged(viperManager: ViPERManager, route: MediaRouter.RouteInfo) {
-            updateNotification(route = route)
-        }
+    private var isForeground = false
+    private val intentsFlow = MutableSharedFlow<Intent>(
+        extraBufferCapacity = Int.MAX_VALUE,
+    )
 
-        override fun onSessionsChanged(viperManager: ViPERManager, sessions: List<Session>) {
-            updateNotification(sessions = sessions)
-        }
-    }
+    // todo: add callback or something to update the notification when a session is added or removed or legacy mode is toggled
 
-    private val settingsListener = object : ViPERSettings.Listener {
-        override fun onIsLegacyModeChanged(viperSettings: ViPERSettings, isLegacyMode: Boolean) {
-            updateNotification()
-        }
+    override fun onCreate() {
+        super.onCreate()
+        collectIntents()
+        collectSessions()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.d(TAG, "onStartCommand() called with: intent = $intent, flags = $flags, startId = $startId")
-        
-        startForeground(1, getNotification())
+        super.onStartCommand(intent, flags, startId)
 
-        when (intent?.action) {
-            "android.media.action.OPEN_AUDIO_EFFECT_CONTROL_SESSION" -> {
-                val packageName = intent.getStringExtra("android.media.extra.PACKAGE_NAME") ?: ""
-                val sessionId = intent.getIntExtra("android.media.extra.AUDIO_SESSION", -1)
-                val contentType = intent.getIntExtra("android.media.extra.CONTENT_TYPE", AudioEffect.CONTENT_TYPE_MUSIC)
-
-                viperManager.addSession(packageName, sessionId, contentType)
-            }
-            "android.media.action.CLOSE_AUDIO_EFFECT_CONTROL_SESSION" -> {
-                val packageName = intent.getStringExtra("android.media.extra.PACKAGE_NAME") ?: ""
-                val sessionId = intent.getIntExtra("android.media.extra.AUDIO_SESSION", -1)
-
-                viperManager.removeSession(packageName, sessionId)
+        if (!isForeground) {
+            try {
+                ServiceCompat.startForeground(
+                    this,
+                    SERVICE_NOTIFICATION_ID,
+                    getNotification(),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                )
+                isForeground = true
+            } catch (e: Exception) {
+                FirebaseCrashlytics.getInstance().recordException(e)
             }
         }
 
-        if (!viperManager.hasSessions()) {
-            stopSelf(startId)
+        if (intent != null) {
+            intentsFlow.tryEmit(intent)
         }
 
         return START_STICKY
     }
 
-    override fun onCreate() {
-        super.onCreate()
-        viperManager.addListener(managerListener)
-        viperSettings.addListener(settingsListener)
+    private fun collectIntents() {
+        lifecycleScope.launch {
+            intentsFlow.collect(::handleIntent)
+        }
     }
 
-    override fun onDestroy() {
-        viperManager.removeListener(managerListener)
-        viperSettings.removeListener(settingsListener)
-        super.onDestroy()
+    private suspend fun handleIntent(intent: Intent) {
+        when (intent.action) {
+            AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION -> {
+                val packageName = intent.getStringExtra(AudioEffect.EXTRA_PACKAGE_NAME)
+                val sessionId = intent.getIntExtra(AudioEffect.EXTRA_AUDIO_SESSION, -1)
+                if (packageName == null || sessionId == -1) return
+                viperManager.addSession(packageName, sessionId)
+            }
+            AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION -> {
+                val packageName = intent.getStringExtra(AudioEffect.EXTRA_PACKAGE_NAME)
+                val sessionId = intent.getIntExtra(AudioEffect.EXTRA_AUDIO_SESSION, -1)
+                if (packageName == null || sessionId == -1) return
+                viperManager.removeSession(packageName, sessionId)
+            }
+        }
     }
 
-    private fun updateNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()) {
-        val notification = getNotification(route, sessions)
-        NotificationManagerCompat.from(this).notify(1, notification)
+    private fun collectSessions() {
+        lifecycleScope.launch {
+            viperManager.waitForReady()
+            viperManager.currentSessions.collect { sessions ->
+                if (sessions.isEmpty()) {
+                    stopSelf()
+                } else {
+                    updateNotification()
+                }
+            }
+        }
     }
 
-    private fun getNotification(route: MediaRouter.RouteInfo = viperManager.getSelectedMediaRoute(), sessions: List<Session> = viperManager.getCurrentSessions()): Notification {
+    @SuppressLint("MissingPermission")
+    private fun updateNotification() {
+        NotificationManagerCompat.from(this)
+            .notify(SERVICE_NOTIFICATION_ID, getNotification())
+    }
+
+    private fun getNotification(): Notification {
         val pendingIntent = packageManager.getLaunchIntentForPackage(packageName).let {
             PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
         }
-        val text = if (viperSettings.isLegacyMode) "Legacy mode" else sessions.map {
-            AndroidUtils.getApplicationLabel(this, it.packageName)
-        }.distinct().joinToString().ifEmpty { "No active sessions" }
+
+        val title = getString(
+            R.string.device_connected,
+            viperManager.currentRoute.value.getName()
+        )
+
+        val text = if (viperSettings.isLegacyMode)
+            getString(R.string.legacy_mode)
+        else
+            getSessionAppLabelsString()
 
         return NotificationCompat.Builder(this, ViPERApp.SERVICES_CHANNEL_ID)
-            .setContentTitle("${route.getDisplayName()} connected")
+            .setContentTitle(title)
             .setContentText(text)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentIntent(pendingIntent)
@@ -108,7 +134,14 @@ class ViPERService : Service() {
             .build()
     }
 
-    override fun onBind(intent: Intent): IBinder? {
-        throw UnsupportedOperationException("This service does not support binding")
+    private fun getSessionAppLabelsString(): String {
+        val sessions = viperManager.currentSessions.value
+        return sessions.distinctBy { it.packageName }.map {
+            AndroidUtils.getApplicationLabel(this, it.packageName)
+        }.distinct().joinToString().ifEmpty { getString(R.string.no_active_sessions) }
+    }
+
+    companion object {
+        private const val SERVICE_NOTIFICATION_ID = 1
     }
 }

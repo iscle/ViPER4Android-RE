@@ -2,6 +2,7 @@ package com.aam.viper4android
 
 import com.aam.viper4android.ktx.AudioEffectKtx
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import java.util.*
 
@@ -12,7 +13,6 @@ class ViPEREffect(audioSession: Int) {
     }
 
     private val audioEffect = AudioEffectKtx(UUID_NULL, VIPER_UUID, 0, audioSession)
-    private val actor = AudioEffectActor(audioEffect)
 
     val status = Status()
     val masterLimiter = MasterLimiter()
@@ -34,38 +34,8 @@ class ViPEREffect(audioSession: Int) {
     val analogX = AnalogX()
     val speakerOptimization = SpeakerOptimization()
 
-    private fun getEnabled(result: CompletableDeferred<Boolean>) = actor.getEnabled(result)
-
-    private fun getEnabledSync(): Boolean {
-        val result = CompletableDeferred<Boolean>()
-        getEnabled(result)
-        return runBlocking { result.await() }
-    }
-
-    private fun setEnabled(enabled: Boolean) = actor.setEnabled(enabled)
-
-    private fun getParameter(
-        param: ByteArray,
-        value: ByteArray,
-        result: CompletableDeferred<Int>? = null
-    ) = actor.getParameter(param, value, result)
-
-    private fun getParameterSync(param: ByteArray, value: ByteArray): Int {
-        val result = CompletableDeferred<Int>()
-        getParameter(param, value, result)
-        return runBlocking { result.await() }
-    }
-
-    private fun setParameter(
-        param: ByteArray,
-        value: ByteArray,
-        result: CompletableDeferred<Int>? = null
-    ) = actor.setParameter(param, value, result)
-
     fun release() {
-        actor.close {
-            audioEffect.release()
-        }
+        audioEffect.release()
     }
 
     inner class Status {
@@ -74,10 +44,8 @@ class ViPEREffect(audioSession: Int) {
 
     inner class MasterLimiter {
         var enabled: Boolean
-            get() = getEnabledSync()
-            set(value) {
-                setEnabled(value)
-            }
+            get() = audioEffect.enabled
+            set(value) { audioEffect.enabled = value }
 
         var outputGain: Int
             get() {

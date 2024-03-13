@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
@@ -29,7 +30,7 @@ fun StatusDialog(viperManager: ViPERManager, onDismissRequest: () -> Unit) {
             val context = LocalContext.current
             val scrollState = rememberScrollState()
             Column(Modifier.verticalScroll(scrollState)) {
-                val activeSessions = viperManager.getCurrentSessions()
+                val activeSessions = viperManager.currentSessions.collectAsState().value
                 if (activeSessions.isEmpty()) {
                     Text(text = "No active sessions")
                 } else {

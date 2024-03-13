@@ -2,6 +2,9 @@ package com.aam.viper4android.persistence
 
 import com.aam.viper4android.persistence.actor.SettingsDaoActor
 import com.aam.viper4android.persistence.model.PersistedSetting
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,6 +19,9 @@ class ViPERSettings @Inject constructor(
     private val settingsDao = viperDatabase.settingsDao()
     private val settings = mutableMapOf<String, String>()
     private val listeners = mutableListOf<Listener>()
+
+    private val _legacyMode = MutableStateFlow(isLegacyMode)
+    val legacyMode = _legacyMode.asStateFlow()
 
     init {
         runBlocking {

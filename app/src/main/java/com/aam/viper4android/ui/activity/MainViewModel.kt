@@ -33,15 +33,15 @@ class MainViewModel @Inject constructor(
     val analogXState = AnalogXState()
     val speakerOptimizationState = SpeakerOptimizationState()
 
-    private val viperManagerListener = object : ViPERManager.Listener() {
-        override fun onPresetChanged(viperManager: ViPERManager, preset: Preset) {
-            setPreset(preset)
-        }
-    }
+//    private val viperManagerListener = object : ViPERManager.Listener() {
+//        override fun onPresetChanged(viperManager: ViPERManager, preset: Preset) {
+//            setPreset(preset)
+//        }
+//    }
 
     init {
         registerPresetListener()
-        setPreset(viperManager.getCurrentPreset())
+        setPreset(viperManager.currentPreset.value)
         observeViPER()
         observeMasterLimiter()
         observeSpectrumExtension()
@@ -58,8 +58,8 @@ class MainViewModel @Inject constructor(
     }
 
     private fun registerPresetListener() {
-        viperManager.addListener(viperManagerListener)
-        addCloseable { viperManager.removeListener(viperManagerListener) }
+//        viperManager.addListener(viperManagerListener)
+//        addCloseable { viperManager.removeListener(viperManagerListener) }
     }
 
     private fun setPreset(preset: Preset) {
