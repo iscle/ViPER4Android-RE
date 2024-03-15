@@ -1,31 +1,34 @@
 package com.aam.viper4android.ui.effect
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
-
-class SpectrumExtensionState {
-    var enabled by mutableStateOf(false)
-    var strength by mutableStateOf(10)
-}
+import com.aam.viper4android.vm.SpectrumExtensionViewModel
 
 @Composable
-fun SpectrumExtensionEffect(state: SpectrumExtensionState) {
+fun SpectrumExtensionEffect(
+    viewModel: SpectrumExtensionViewModel = viewModel()
+) {
+    val enabled = viewModel.enabled.collectAsState().value
+    val strength = viewModel.strength.collectAsState().value
+
     EffectCard(
         icon = painterResource(R.drawable.ic_vse),
         name = "Spectrum extension",
-        enabled = state.enabled,
-        onEnabledChange = { state.enabled = it }) {
+        enabled = enabled,
+        onEnabledChange = viewModel::setEnabled
+    ) {
         Column {
             ValueSlider(
                 title = "Strength",
                 summaryUnit = "%",
-                value = state.strength,
-                onValueChange = { state.strength = it },
+                value = strength,
+                onValueChange = viewModel::setStrength,
                 valueRange = 0..100
             )
         }

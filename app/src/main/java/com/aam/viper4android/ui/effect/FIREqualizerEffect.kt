@@ -1,21 +1,25 @@
 package com.aam.viper4android.ui.effect
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
-
-class FIREqualizerState {
-    var enabled by mutableStateOf(false)
-}
+import com.aam.viper4android.vm.FIREqualizerViewModel
 
 @Composable
-fun FIREqualizerEffect(state: FIREqualizerState) {
+fun FIREqualizerEffect(
+    viewModel: FIREqualizerViewModel = viewModel()
+) {
+    val enabled = viewModel.enabled.collectAsState().value
+    
     EffectCard(
         icon = painterResource(R.drawable.ic_equalizer),
         name = "FIR equalizer",
-        enabled = state.enabled,
-        onEnabledChange = { state.enabled = it }) {
+        enabled = enabled,
+        onEnabledChange = viewModel::setEnabled
+    ) {
 
     }
 }

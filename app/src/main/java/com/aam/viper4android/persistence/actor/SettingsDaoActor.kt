@@ -2,7 +2,9 @@ package com.aam.viper4android.persistence.actor
 
 import com.aam.viper4android.persistence.ViPERDatabase
 import com.aam.viper4android.persistence.model.PersistedSetting
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
 import javax.inject.Inject

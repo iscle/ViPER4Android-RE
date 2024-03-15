@@ -5,7 +5,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.aam.viper4android.persistence.model.PersistedPreset
-import com.aam.viper4android.persistence.model.PersistedSetting
 
 @Dao
 interface PresetsDao {

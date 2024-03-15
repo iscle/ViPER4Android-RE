@@ -1,28 +1,35 @@
 package com.aam.viper4android.ui.effect
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
-
-class ViPERClarityState {
-    var enabled by mutableStateOf(false)
-    var clarityMode by mutableStateOf(0)
-    var clarityGain by mutableStateOf(1)
-}
+import com.aam.viper4android.vm.ViPERClarityViewModel
 
 @Composable
-fun ViPERClarityEffect(state: ViPERClarityState) {
-    EffectCard(icon = painterResource(R.drawable.ic_clarity), name = "ViPER clarity", enabled = state.enabled, onEnabledChange = { state.enabled = it }) {
+fun ViPERClarityEffect(
+    viewModel: ViPERClarityViewModel = viewModel()
+) {
+    val enabled = viewModel.enabled.collectAsState().value
+    val clarityMode = viewModel.clarityMode.collectAsState().value
+    val clarityGain = viewModel.clarityGain.collectAsState().value
+    
+    EffectCard(
+        icon = painterResource(R.drawable.ic_clarity),
+        name = "ViPER clarity",
+        enabled = enabled,
+        onEnabledChange = viewModel::setEnabled
+    ) {
         Column {
             ValueSlider(
                 title = "Clarity gain",
                 summaryUnit = "db",
-                value = state.clarityGain,
-                onValueChange = { state.clarityGain = it },
+                value = clarityGain,
+                onValueChange = viewModel::setClarityGain,
                 valueRange = 0..9
             )
         }

@@ -1,27 +1,34 @@
 package com.aam.viper4android.ui.effect
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
-
-class AnalogXState {
-    var enabled by mutableStateOf(false)
-    var level by mutableStateOf(0)
-}
+import com.aam.viper4android.vm.AnalogXViewModel
 
 @Composable
-fun AnalogXEffect(state: AnalogXState) {
-    EffectCard(icon = painterResource(R.drawable.ic_analogx), name = "AnalogX", enabled = state.enabled, onEnabledChange = { state.enabled = it }) {
+fun AnalogXEffect(
+    viewModel: AnalogXViewModel = viewModel()
+) {
+    val enabled = viewModel.enabled.collectAsState().value
+    val level = viewModel.level.collectAsState().value
+
+    EffectCard(
+        icon = painterResource(R.drawable.ic_analogx),
+        name = "AnalogX",
+        enabled = enabled,
+        onEnabledChange = viewModel::setEnabled
+    ) {
         Column {
             ValueSlider(
                 title = "Level",
-                summary = (state.level + 1).toString(),
-                value = state.level,
-                onValueChange = { state.level = it },
+                summary = (level + 1).toString(),
+                value = level,
+                onValueChange = viewModel::setLevel,
                 valueRange = 0..2
             )
         }

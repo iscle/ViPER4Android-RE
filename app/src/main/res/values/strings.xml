@@ -6,4 +6,13 @@
     <string name="legacy_mode">Legacy mode</string>
     <string name="no_active_sessions">No active sessions</string>
     <string name="device_connected">%1$s connected</string>
+    <string name="status">Status</string>
+    <string name="close">Close</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="version">Version: %1$s</string>
+    <string name="enabled">Enabled: %1$s</string>
+    <string name="architecture">Architecture: %1$s</string>
+    <string name="frame_count">Frame count: %1$s</string>
+    <string name="disable_reason">Disable reason: %1$s</string>
 </resources>

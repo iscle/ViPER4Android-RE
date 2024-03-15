@@ -140,7 +140,7 @@ class ViPERManager @Inject constructor(
         try {
             sessions.add(Session(packageName, sessionId))
         } catch (e: Exception) {
-            Log.e(TAG, "addSessionSafe: Failed to create Session", e)
+            Log.e(TAG, "addSessionSafe: Failed to create session", e)
         }
     }
 

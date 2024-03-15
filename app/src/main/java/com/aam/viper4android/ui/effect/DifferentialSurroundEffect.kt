@@ -1,32 +1,35 @@
 package com.aam.viper4android.ui.effect
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
-
-class DifferentialSurroundState {
-    var enabled by mutableStateOf(false)
-    var delay by mutableStateOf(4)
-}
+import com.aam.viper4android.vm.DifferentialSurroundViewModel
 
 @Composable
-fun DifferentialSurroundEffect(state: DifferentialSurroundState) {
+fun DifferentialSurroundEffect(
+    viewModel: DifferentialSurroundViewModel = viewModel()
+) {
+    val enabled = viewModel.enabled.collectAsState().value
+    val delay = viewModel.delay.collectAsState().value
+
     EffectCard(
         icon = painterResource(R.drawable.ic_surround),
         name = "Differential surround",
-        enabled = state.enabled,
-        onEnabledChange = { state.enabled = it }) {
+        enabled = enabled,
+        onEnabledChange = viewModel::setEnabled
+    ) {
         Column {
             ValueSlider(
                 title = "Delay",
-                summary = (state.delay + 1).toString(),
+                summary = (delay + 1).toString(),
                 summaryUnit = "ms",
-                value = state.delay,
-                onValueChange = { state.delay = it },
+                value = delay,
+                onValueChange = viewModel::setDelay,
                 valueRange = 0..19
             )
         }

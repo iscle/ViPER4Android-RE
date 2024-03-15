@@ -1,18 +1,16 @@
 package com.aam.viper4android
 
 import com.aam.viper4android.ktx.AudioEffectKtx
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.runBlocking
-import java.util.*
+import com.aam.viper4android.ktx.getBooleanParameter
+import com.aam.viper4android.ktx.getByteArrayParameter
+import com.aam.viper4android.ktx.getIntParameter
+import com.aam.viper4android.ktx.getUByteParameter
+import com.aam.viper4android.ktx.getUIntParameter
+import com.aam.viper4android.ktx.getULongParameter
+import java.util.UUID
 
-class ViPEREffect(audioSession: Int) {
-    companion object {
-        private val UUID_NULL = UUID.fromString("ec7178ec-e5e1-4432-a3f4-4657e6795210")
-        val VIPER_UUID = UUID.fromString("90380da3-8536-4744-a6a3-5731970e640f")
-    }
-
-    private val audioEffect = AudioEffectKtx(UUID_NULL, VIPER_UUID, 0, audioSession)
+class ViPEREffect(sessionId: Int) {
+    private val audioEffect = AudioEffectKtx(UUID_NULL, VIPER_UUID, 0, sessionId)
 
     val status = Status()
     val masterLimiter = MasterLimiter()
@@ -39,7 +37,23 @@ class ViPEREffect(audioSession: Int) {
     }
 
     inner class Status {
+        val enabled: Boolean
+            get() = audioEffect.getBooleanParameter(PARAM_GET_ENABLED)
 
+        val frameCount: ULong
+            get() = audioEffect.getULongParameter(PARAM_GET_FRAME_COUNT)
+
+        val version: UInt
+            get() = audioEffect.getUIntParameter(PARAM_GET_VERSION)
+
+        val disableReason: DisableReason
+            get() = DisableReason.fromValue(audioEffect.getIntParameter(PARAM_GET_DISABLE_REASON))
+
+        val config: Configs
+            get() = Configs.fromBytes(audioEffect.getByteArrayParameter(PARAM_GET_CONFIG, 40))
+
+        val architecture: Architecture
+            get() = Architecture.fromValue(audioEffect.getUByteParameter(PARAM_GET_ARCHITECTURE))
     }
 
     inner class MasterLimiter {
@@ -230,5 +244,25 @@ class ViPEREffect(audioSession: Int) {
                 return false
             } // TODO
             set(value) {} // TODO
+    }
+
+    companion object {
+        private val UUID_NULL = UUID.fromString("ec7178ec-e5e1-4432-a3f4-4657e6795210")
+        val VIPER_UUID = UUID.fromString("90380da3-8536-4744-a6a3-5731970e640f")
+
+        // typedef enum {
+        //    PARAM_GET_ENABLED = 0,
+        //    PARAM_GET_FRAME_COUNT,
+        //    PARAM_GET_VERSION,
+        //    PARAM_GET_DISABLE_REASON,
+        //    PARAM_GET_CONFIG,
+        //    PARAM_GET_ARCHITECTURE,
+        //} param_get_t;
+        private const val PARAM_GET_ENABLED = 0u
+        private const val PARAM_GET_FRAME_COUNT = 1u
+        private const val PARAM_GET_VERSION = 2u
+        private const val PARAM_GET_DISABLE_REASON = 3u
+        private const val PARAM_GET_CONFIG = 4u
+        private const val PARAM_GET_ARCHITECTURE = 5u
     }
 }

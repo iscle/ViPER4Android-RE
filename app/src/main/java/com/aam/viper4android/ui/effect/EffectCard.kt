@@ -2,8 +2,14 @@ package com.aam.viper4android
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.Card
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -15,8 +21,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+
+private const val TAG = "EffectCard"
 
 @Composable
 fun EffectCard(
@@ -27,33 +37,52 @@ fun EffectCard(
     expandedContent: (@Composable BoxScope.() -> Unit)? = null
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
-    Card {
-        Column {
-            Row(modifier = Modifier
+    ElevatedCard {
+        Row(
+            modifier = Modifier
                 .fillMaxWidth()
-                .clickable(enabled = expandedContent != null) { expanded = !expanded }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Icon(
-                    painter = icon, contentDescription = null
-                )
-                Text(
-                    text = name,
-                    modifier = Modifier.weight(1f),
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-                if (enabled != null && onEnabledChange != null) Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
-            }
-            expandedContent?.let {
-                AnimatedVisibility(visible = expanded) {
-                    Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        it()
+                .height(64.dp)
+                .clickable(
+                    enabled = expandedContent != null || (enabled != null && onEnabledChange != null)
+                ) {
+                    if (expandedContent != null) {
+                        expanded = !expanded
+                    } else if (enabled != null && onEnabledChange != null) {
+                        onEnabledChange(!enabled)
                     }
+                }
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Icon(
+                painter = icon, contentDescription = null
+            )
+            Text(
+                text = name,
+                modifier = Modifier.weight(1f),
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
+            if (enabled != null && onEnabledChange != null) Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
+        }
+        expandedContent?.let {
+            AnimatedVisibility(visible = expanded) {
+                Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    it()
                 }
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun EffectCardPreview() {
+    EffectCard(
+        icon = painterResource(id = R.drawable.ic_equalizer),
+        name = "Test Effect",
+        enabled = true,
+        onEnabledChange = { }
+    )
 }

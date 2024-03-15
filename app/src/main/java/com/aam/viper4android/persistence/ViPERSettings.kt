@@ -3,7 +3,6 @@ package com.aam.viper4android.persistence
 import com.aam.viper4android.persistence.actor.SettingsDaoActor
 import com.aam.viper4android.persistence.model.PersistedSetting
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject

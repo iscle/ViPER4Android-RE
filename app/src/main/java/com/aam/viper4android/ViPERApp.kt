@@ -1,23 +1,21 @@
 package com.aam.viper4android
 
 import android.app.Application
-import com.aam.viper4android.util.HiddenApi
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
+import com.aam.viper4android.util.HiddenApi
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp
 class ViPERApp : Application() {
     companion object {
         const val SERVICES_CHANNEL_ID = "services_channel"
-        init {
-            HiddenApi.unseal()
-        }
     }
 
     override fun onCreate() {
         super.onCreate()
+        HiddenApi.unseal()
         createNotificationChannels()
     }
 
