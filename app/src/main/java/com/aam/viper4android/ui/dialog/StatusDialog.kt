@@ -17,13 +17,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.aam.viper4android.vm.StatusViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 
 @Composable
 fun StatusDialog(
-    statusViewModel: StatusViewModel = viewModel(),
+    statusViewModel: StatusViewModel = hiltViewModel(),
     onDismissRequest: () -> Unit
 ) {
     AlertDialog(

@@ -8,7 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
@@ -17,7 +17,7 @@ import com.aam.viper4android.vm.ViPERBassViewModel
 
 @Composable
 fun ViPERBassEffect(
-    viewModel: ViPERBassViewModel = viewModel()
+    viewModel: ViPERBassViewModel = hiltViewModel()
 ) {
     val enabled = viewModel.enabled.collectAsState().value
     val bassMode = viewModel.bassMode.collectAsState().value

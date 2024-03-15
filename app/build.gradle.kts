@@ -74,6 +74,7 @@ dependencies {
     // Hilt
     implementation("com.google.dagger:hilt-android:$hiltVersion")
     kapt("com.google.dagger:hilt-compiler:$hiltVersion")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Jetpack Compose
     implementation("androidx.compose.ui:ui:$composeVersion")

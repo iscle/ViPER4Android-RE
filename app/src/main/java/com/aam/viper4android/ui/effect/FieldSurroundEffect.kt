@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
@@ -12,7 +12,7 @@ import com.aam.viper4android.vm.FieldSurroundViewModel
 
 @Composable
 fun FieldSurroundEffect(
-    viewModel: FieldSurroundViewModel = viewModel()
+    viewModel: FieldSurroundViewModel = hiltViewModel()
 ) {
     val enabled = viewModel.enabled.collectAsState().value
     val surroundStrength = viewModel.surroundStrength.collectAsState().value

@@ -26,6 +26,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,10 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.PresetDialog
 import com.aam.viper4android.StatusDialog
-import com.aam.viper4android.ui.activity.MainViewModel
 import com.aam.viper4android.ui.effect.AnalogXEffect
 import com.aam.viper4android.ui.effect.AuditorySystemProtectionEffect
 import com.aam.viper4android.ui.effect.ConvolverEffect
@@ -57,12 +57,16 @@ import com.aam.viper4android.ui.effect.TubeSimulator6N1JEffect
 import com.aam.viper4android.ui.effect.ViPERBassEffect
 import com.aam.viper4android.ui.effect.ViPERClarityEffect
 import com.aam.viper4android.ui.effect.ViPERDDCEffect
+import com.aam.viper4android.vm.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
-    mainViewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = hiltViewModel(),
+    onNavigateToSettings: () -> Unit
 ) {
+    val enabled = viewModel.enabled.collectAsState().value
+
     val snackbarHostState = remember { SnackbarHostState() }
     var openStatusDialog by rememberSaveable { mutableStateOf(false) }
     var openPresetDialog by rememberSaveable { mutableStateOf(false) }
@@ -81,7 +85,7 @@ fun MainScreen(
         bottomBar = {
             BottomAppBar(
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Filled.Settings,
                             contentDescription = "Settings"
@@ -103,7 +107,7 @@ fun MainScreen(
                 floatingActionButton = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         FloatingActionButton(
-                            onClick = { mainViewModel.viperState.enabled = !mainViewModel.viperState.enabled },
+                            onClick = { viewModel.setEnabled(!enabled) },
                             containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                             elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                         ) {
@@ -117,7 +121,7 @@ fun MainScreen(
     ) {
         Box(modifier = Modifier.padding(it)) {
             val scrollState = rememberScrollState()
-            if (mainViewModel.viperState.enabled) {
+            if (enabled) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

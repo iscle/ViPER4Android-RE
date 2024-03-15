@@ -18,23 +18,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.aam.viper4android.ViPERService
 import com.aam.viper4android.ui.MainScreen
+import com.aam.viper4android.ui.SettingsScreen
 import com.aam.viper4android.ui.theme.ViPER4AndroidTheme
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import dagger.hilt.android.AndroidEntryPoint
 
 private const val TAG = "MainActivity"
-
-class ViPERState {
-    var enabled by mutableStateOf(false)
-}
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -47,7 +44,26 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = "main"
+                    ) {
+                        composable("main") {
+                            MainScreen(
+                                onNavigateToSettings = {
+                                    navController.navigate("settings")
+                                }
+                            )
+                        }
+                        composable("settings") {
+                            SettingsScreen(
+                                onNavigateUp = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

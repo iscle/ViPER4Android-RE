@@ -8,7 +8,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
@@ -52,7 +52,7 @@ private val thresholdLimitSummaryValues = arrayOf(
 
 @Composable
 fun MasterLimiterEffect(
-    viewModel: MasterLimiterViewModel = viewModel()
+    viewModel: MasterLimiterViewModel = hiltViewModel()
 ) {
     val outputGain = viewModel.outputGain.collectAsState().value
     val outputPan = viewModel.outputPan.collectAsState().value

@@ -21,12 +21,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-
-private const val TAG = "EffectCard"
 
 @Composable
 fun EffectCard(
@@ -64,7 +60,9 @@ fun EffectCard(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1
             )
-            if (enabled != null && onEnabledChange != null) Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
+            if (enabled != null && onEnabledChange != null) {
+                Switch(checked = enabled, onCheckedChange = { onEnabledChange(it) })
+            }
         }
         expandedContent?.let {
             AnimatedVisibility(visible = expanded) {
@@ -74,15 +72,4 @@ fun EffectCard(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun EffectCardPreview() {
-    EffectCard(
-        icon = painterResource(id = R.drawable.ic_equalizer),
-        name = "Test Effect",
-        enabled = true,
-        onEnabledChange = { }
-    )
 }

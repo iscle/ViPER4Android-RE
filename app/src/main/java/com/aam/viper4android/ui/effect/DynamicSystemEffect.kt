@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
@@ -13,7 +13,7 @@ import com.aam.viper4android.vm.DynamicSystemViewModel
 
 @Composable
 fun DynamicSystemEffect(
-    viewModel: DynamicSystemViewModel = viewModel()
+    viewModel: DynamicSystemViewModel = hiltViewModel()
 ) {
     val enabled = viewModel.enabled.collectAsState().value
     val deviceType = viewModel.deviceType.collectAsState().value

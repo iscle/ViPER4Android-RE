@@ -1,8 +1,10 @@
-package com.aam.viper4android
+package com.aam.viper4android.vm
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aam.viper4android.StatusSession
+import com.aam.viper4android.ViPERManager
 import com.aam.viper4android.util.AndroidUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
