@@ -51,14 +51,8 @@ private fun ValuePickerDialog(
     onSelectedIndexChange: (Int) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    var internalSelectedIndex by rememberSaveable { mutableStateOf(selectedIndex) }
     AlertDialog(
-        onDismissRequest = {
-            // Dismiss the dialog when the user clicks outside the dialog or on the back
-            // button. If you want to disable that functionality, simply use an empty
-            // onDismissRequest.
-            onDismissRequest()
-        },
+        onDismissRequest = onDismissRequest,
         title = {
             Text(text = title)
         },
@@ -69,12 +63,12 @@ private fun ValuePickerDialog(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { internalSelectedIndex = index },
+                            .clickable { onSelectedIndexChange(index) },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
-                            selected = index == internalSelectedIndex,
-                            onClick = { internalSelectedIndex = index })
+                            selected = index == selectedIndex,
+                            onClick = { onSelectedIndexChange(index) })
                         Text(text = value)
                     }
                 }
@@ -82,21 +76,9 @@ private fun ValuePickerDialog(
         },
         confirmButton = {
             TextButton(
-                onClick = {
-                    onSelectedIndexChange(internalSelectedIndex)
-                    onDismissRequest()
-                }
+                onClick = onDismissRequest
             ) {
-                Text("Select")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                Text("Cancel")
+                Text("Close")
             }
         }
     )

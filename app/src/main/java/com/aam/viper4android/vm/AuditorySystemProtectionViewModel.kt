@@ -13,18 +13,9 @@ import javax.inject.Inject
 class AuditorySystemProtectionViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled = _enabled.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.auditorySystemProtection.enabled
-            }
-        }
-    }
+    val enabled = viperManager.auditorySystemProtection.enabled
 
     fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+        viperManager.auditorySystemProtection.setEnabled(enabled)
     }
 }

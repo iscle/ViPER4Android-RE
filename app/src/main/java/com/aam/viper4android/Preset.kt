@@ -1,6 +1,7 @@
 package com.aam.viper4android
 
 data class Preset(
+    var name: String = "Untitled preset",
     var enabled: Boolean = false,
     val analogX: AnalogX = AnalogX(),
     val auditorySystemProtection: AuditorySystemProtection = AuditorySystemProtection(),
@@ -36,7 +37,7 @@ data class Preset(
 
     data class DifferentialSurround(
         var enabled: Boolean = false,
-        var delay: Int = 4,
+        var delay: UShort = 4u,
     )
 
     data class DynamicSystem(
@@ -61,12 +62,13 @@ data class Preset(
 
     data class HeadphoneSurroundPlus(
         var enabled: Boolean = false,
+        var level: UByte = 0u,
     )
 
     data class MasterLimiter(
-        var outputGain: Int = 11,
-        var outputPan: Int = 50,
-        var thresholdLimit: Int = 5,
+        var outputGain: UByte = 100u,
+        var outputPan: UByte = 50u,
+        var thresholdLimit: UByte = 100u,
     )
 
     data class PlaybackGainControl(
@@ -75,6 +77,11 @@ data class Preset(
 
     data class Reverberation(
         var enabled: Boolean = false,
+        var roomSize: UByte = 0u,
+        var soundField: UByte = 0u,
+        var damping: UByte = 0u,
+        var wetSignal: UByte = 0u,
+        var drySignal: UByte = 50u,
     )
 
     data class SpeakerOptimization(
@@ -83,7 +90,7 @@ data class Preset(
 
     data class SpectrumExtension(
         var enabled: Boolean = false,
-        var strength: Int = 10,
+        var strength: UByte = 10u,
     )
 
     data class TubeSimulator6N1J(
@@ -92,15 +99,15 @@ data class Preset(
 
     data class ViPERBass(
         var enabled: Boolean = false,
-        var bassMode: Int = 0,
-        var bassFrequency: Int = 55,
-        var bassGain: Int = 0,
+        var mode: UByte = 0u,
+        var frequency: UByte = 15u,
+        var gain: UShort = 50u,
     )
 
     data class ViPERClarity(
         var enabled: Boolean = false,
-        var clarityMode: Int = 0,
-        var clarityGain: Int = 1,
+        var mode: UByte = 0u,
+        var gain: UShort = 1u,
     )
 
     data class ViPERDDC(

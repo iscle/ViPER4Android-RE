@@ -13,18 +13,9 @@ import javax.inject.Inject
 class PlaybackGainControlViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled = _enabled.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.playbackGainControl.enabled
-            }
-        }
-    }
+    val enabled = viperManager.playbackGainControl.enabled
 
     fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+        viperManager.playbackGainControl.setEnabled(enabled)
     }
 }

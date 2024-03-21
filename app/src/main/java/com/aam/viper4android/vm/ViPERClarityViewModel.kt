@@ -4,43 +4,38 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aam.viper4android.ViPERManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class ViPERClarityViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled = _enabled.asStateFlow()
-
-    private val _clarityMode = MutableStateFlow(0)
-    val clarityMode = _clarityMode.asStateFlow()
-
-    private val _clarityGain = MutableStateFlow(0)
-    val clarityGain = _clarityGain.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.viperClarity.enabled
-                _clarityMode.value = preset.viperClarity.clarityMode
-                _clarityGain.value = preset.viperClarity.clarityGain
-            }
-        }
-    }
+    val enabled = viperManager.viperClarity.enabled
+    val mode = viperManager.viperClarity.mode
+        .map { it.toInt() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = 0
+        )
+    val gain = viperManager.viperClarity.gain.map {
+        it.toInt() / 50
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(),
+        initialValue = 0
+    )
 
     fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+        viperManager.viperClarity.setEnabled(enabled)
     }
-
-    fun setClarityMode(mode: Int) {
-        _clarityMode.value = mode
+    fun setMode(mode: Int) {
+        viperManager.viperClarity.setMode(mode.toUByte())
     }
-
-    fun setClarityGain(gain: Int) {
-        _clarityGain.value = gain
+    fun setGain(gain: Int) {
+        viperManager.viperClarity.setGain((gain * 50).toUShort())
     }
 }

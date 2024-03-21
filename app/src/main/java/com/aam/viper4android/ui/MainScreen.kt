@@ -1,5 +1,7 @@
 package com.aam.viper4android.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,10 +36,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aam.viper4android.PresetDialog
+import com.aam.viper4android.R
+import com.aam.viper4android.RenamePresetDialog
 import com.aam.viper4android.StatusDialog
 import com.aam.viper4android.ui.effect.AnalogXEffect
 import com.aam.viper4android.ui.effect.AuditorySystemProtectionEffect
@@ -65,9 +70,11 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
     onNavigateToSettings: () -> Unit
 ) {
+    val presetName = viewModel.presetName.collectAsState().value
     val enabled = viewModel.enabled.collectAsState().value
 
     val snackbarHostState = remember { SnackbarHostState() }
+    var openRenamePresetDialog by rememberSaveable { mutableStateOf(false) }
     var openStatusDialog by rememberSaveable { mutableStateOf(false) }
     var openPresetDialog by rememberSaveable { mutableStateOf(false) }
     Scaffold(
@@ -75,7 +82,11 @@ fun MainScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "ViPER4Android",
+                        text = "$presetName - ViPER",
+                        modifier = Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                        ) { openRenamePresetDialog = true },
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -88,31 +99,36 @@ fun MainScreen(
                     IconButton(onClick = onNavigateToSettings) {
                         Icon(
                             Icons.Filled.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = stringResource(R.string.settings)
                         )
                     }
                     IconButton(onClick = { openStatusDialog = true }) {
                         Icon(
                             Icons.Filled.Memory,
-                            contentDescription = "Status",
+                            contentDescription = stringResource(R.string.status),
                         )
                     }
                     IconButton(onClick = { openPresetDialog = true }) {
                         Icon(
                             Icons.Filled.Bookmark,
-                            contentDescription = "Presets",
+                            contentDescription = stringResource(R.string.presets),
                         )
                     }
                 },
                 floatingActionButton = {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        FloatingActionButton(
-                            onClick = { viewModel.setEnabled(!enabled) },
-                            containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
-                            elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
-                        ) {
-                            Icon(Icons.Filled.PowerSettingsNew, "Localized description")
-                        }
+                    FloatingActionButton(
+                        onClick = { viewModel.setEnabled(!enabled) },
+                        containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
+                        elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
+                    ) {
+                        Icon(
+                            Icons.Filled.PowerSettingsNew,
+                            contentDescription = if (enabled) {
+                                stringResource(R.string.disable)
+                            } else {
+                                stringResource(R.string.enable)
+                            }
+                        )
                     }
                 }
             )
@@ -156,6 +172,13 @@ fun MainScreen(
                 ) {
                     Text("ViPER is disabled.")
                 }
+            }
+            if (openRenamePresetDialog) {
+                RenamePresetDialog(
+                    name = presetName,
+                    onNameChanged = viewModel::setPresetName,
+                    onDismissRequest = { openRenamePresetDialog = false }
+                )
             }
             if (openStatusDialog) {
                 StatusDialog(onDismissRequest = { openStatusDialog = false })

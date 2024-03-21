@@ -1,11 +1,9 @@
 package com.aam.viper4android.ui.effect
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -13,8 +11,6 @@ import com.aam.viper4android.EffectCard
 import com.aam.viper4android.R
 import com.aam.viper4android.ui.ValueSlider
 import com.aam.viper4android.vm.MasterLimiterViewModel
-
-private const val TAG = "MasterLimiterEffect"
 
 private val outputGainSummaryValues = arrayOf(
     "-40.0",
@@ -64,7 +60,9 @@ fun MasterLimiterEffect(
         enabled = null,
         onEnabledChange = null
     ) {
-        Column {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             ValueSlider(
                 title = "Output gain",
                 summary = outputGainSummaryValues[outputGain],
@@ -73,7 +71,6 @@ fun MasterLimiterEffect(
                 onValueChange = viewModel::setOutputGain,
                 valueRange = outputGainSummaryValues.indices
             )
-            Spacer(modifier = Modifier.height(8.dp))
             ValueSlider(
                 title = "Output pan",
                 summary = "${100 - outputPan}:${outputPan}",
@@ -81,14 +78,13 @@ fun MasterLimiterEffect(
                 onValueChange = viewModel::setOutputPan,
                 valueRange = 0..100
             )
-            Spacer(modifier = Modifier.height(8.dp))
             ValueSlider(
                 title = "Threshold limit",
                 value = thresholdLimit,
                 summary = thresholdLimitSummaryValues[thresholdLimit],
                 summaryUnit = "dB",
                 onValueChange = viewModel::setThresholdLimit,
-                valueRange = 0..5
+                valueRange = thresholdLimitSummaryValues.indices
             )
         }
     }

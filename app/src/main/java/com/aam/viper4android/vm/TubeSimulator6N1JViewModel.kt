@@ -13,18 +13,9 @@ import javax.inject.Inject
 class TubeSimulator6N1JViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled = _enabled.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.tubeSimulator6N1J.enabled
-            }
-        }
-    }
+    val enabled = viperManager.tubeSimulator6N1J.enabled
 
     fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+        viperManager.tubeSimulator6N1J.setEnabled(enabled)
     }
 }

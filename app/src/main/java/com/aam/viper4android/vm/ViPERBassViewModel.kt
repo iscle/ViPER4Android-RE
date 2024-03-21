@@ -4,51 +4,48 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aam.viper4android.ViPERManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
 class ViPERBassViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled = _enabled.asStateFlow()
-
-    private val _bassMode = MutableStateFlow(0)
-    val bassMode = _bassMode.asStateFlow()
-
-    private val _bassFrequency = MutableStateFlow(0)
-    val bassFrequency = _bassFrequency.asStateFlow()
-
-    private val _bassGain = MutableStateFlow(0)
-    val bassGain = _bassGain.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.viperBass.enabled
-                _bassMode.value = preset.viperBass.bassMode
-                _bassFrequency.value = preset.viperBass.bassFrequency
-                _bassGain.value = preset.viperBass.bassGain
-            }
-        }
-    }
+    val enabled = viperManager.viperBass.enabled
+    val mode = viperManager.viperBass.mode
+        .map { it.toInt() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = 0,
+        )
+    val frequency = viperManager.viperBass.frequency
+        .map { it.toInt() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = 15,
+        )
+    val gain = viperManager.viperBass.gain
+        .map { it.toInt() / 50 }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(),
+            initialValue = 1,
+        )
 
     fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+        viperManager.viperBass.setEnabled(enabled)
     }
-
-    fun setBassMode(mode: Int) {
-        _bassMode.value = mode
+    fun setMode(mode: Int) {
+        viperManager.viperBass.setMode(mode.toUByte())
     }
-
-    fun setBassFrequency(frequency: Int) {
-        _bassFrequency.value = frequency
+    fun setFrequency(frequency: Int) {
+        viperManager.viperBass.setFrequency(frequency.toUByte())
     }
-
-    fun setBassGain(gain: Int) {
-        _bassGain.value = gain
+    fun setGain(gain: Int) {
+        viperManager.viperBass.setGain((gain * 50).toUShort())
     }
 }

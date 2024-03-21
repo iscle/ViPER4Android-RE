@@ -59,6 +59,17 @@ private fun checkParameterLength(length: Int, expected: Int, unknownLength: Bool
     }
 }
 
+private fun checkSetParameterResponse(response: Int) {
+    when (response) {
+        AudioEffect.SUCCESS -> return
+        AudioEffect.ERROR_BAD_VALUE -> throw RuntimeException("Failed to set parameter (bad value)")
+        AudioEffect.ERROR_INVALID_OPERATION -> throw RuntimeException("Failed to set parameter (invalid operation)")
+        AudioEffect.ERROR_NO_MEMORY -> throw RuntimeException("Failed to set parameter (no memory)")
+        AudioEffect.ERROR_DEAD_OBJECT -> throw RuntimeException("Failed to set parameter (dead object)")
+        else -> throw RuntimeException("Failed to set parameter (unknown error: $response)")
+    }
+}
+
 fun AudioEffect.getBooleanParameter(key: UInt): Boolean {
     val param = getKeyAsParam(key)
     val value = ByteArray(1)
@@ -109,4 +120,66 @@ fun AudioEffect.getByteParameter(key: UInt): Byte {
 
 fun AudioEffect.getUByteParameter(key: UInt): UByte {
     return getByteParameter(key).toUByte()
+}
+
+fun AudioEffect.setBooleanParameter(key: UInt, value: Boolean) {
+    val param = getKeyAsParam(key)
+    val data = byteArrayOf(if (value) 1 else 0)
+    val response = setParameterKtx(param, data)
+    checkSetParameterResponse(response)
+}
+
+fun AudioEffect.setLongParameter(key: UInt, value: Long) {
+    val param = getKeyAsParam(key)
+    val data = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putLong(value).array()
+    val response = setParameterKtx(param, data)
+    checkSetParameterResponse(response)
+}
+
+fun AudioEffect.setULongParameter(key: UInt, value: ULong) {
+    setLongParameter(key, value.toLong())
+}
+
+fun AudioEffect.setIntParameter(key: UInt, value: Int) {
+    val param = getKeyAsParam(key)
+    val data = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(value).array()
+    val response = setParameterKtx(param, data)
+    checkSetParameterResponse(response)
+}
+
+fun AudioEffect.setUIntParameter(key: UInt, value: UInt) {
+    setIntParameter(key, value.toInt())
+}
+
+fun AudioEffect.setByteArrayParameter(key: UInt, value: ByteArray) {
+    val param = getKeyAsParam(key)
+    val response = setParameterKtx(param, value)
+    checkSetParameterResponse(response)
+}
+
+fun AudioEffect.setByteParameter(key: UInt, value: Byte) {
+    val param = getKeyAsParam(key)
+    val data = byteArrayOf(value)
+    val response = setParameterKtx(param, data)
+    checkSetParameterResponse(response)
+}
+
+@OptIn(ExperimentalUnsignedTypes::class)
+fun AudioEffect.setUByteArrayParameter(key: UInt, value: UByteArray) {
+    setByteArrayParameter(key, value.toByteArray())
+}
+
+fun AudioEffect.setUByteParameter(key: UInt, value: UByte) {
+    setByteParameter(key, value.toByte())
+}
+
+fun AudioEffect.setShortParameter(key: UInt, value: Short) {
+    val param = getKeyAsParam(key)
+    val data = ByteBuffer.allocate(2).order(ByteOrder.nativeOrder()).putShort(value).array()
+    val response = setParameterKtx(param, data)
+    checkSetParameterResponse(response)
+}
+
+fun AudioEffect.setUShortParameter(key: UInt, value: UShort) {
+    setShortParameter(key, value.toShort())
 }

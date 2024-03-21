@@ -15,4 +15,27 @@
     <string name="architecture">Architecture: %1$s</string>
     <string name="frame_count">Frame count: %1$s</string>
     <string name="disable_reason">Disable reason: %1$s</string>
+    <string name="settings">Settings</string>
+    <string name="presets">Presets</string>
+    <string name="disable">Disable</string>
+    <string name="enable">Enable</string>
+    <string name="viper_bass">ViPER bass</string>
+    <string name="natural_bass">Natural bass</string>
+    <string name="pure_bass_plus">Pure bass+</string>
+    <string name="subwoofer">Subwoofer</string>
+    <string name="bass_frequency">Bass frequency</string>
+    <string name="bass_gain">Bass gain</string>
+    <string name="bass_mode">Bass mode</string>
+    <string name="natural">Natural</string>
+    <string name="ozone_plus">OZone+</string>
+    <string name="xhifi">XHiFi</string>
+    <string name="clarity_mode">Clarity mode</string>
+    <string name="clarity_gain">Clarity gain</string>
+    <string name="viper_clarity">ViPER clarity</string>
+    <string name="playback_gain_control">Playback gain control</string>
+    <string name="strength">Strength</string>
+    <string name="maximum_gain">Maximum gain</string>
+    <string name="output_threshold">Output threshold</string>
+    <string name="headphone_surround_plus">Headphone surround +</string>
+    <string name="level">Level</string>
 </resources>

@@ -13,18 +13,22 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val viperManager: ViPERManager,
 ) : ViewModel() {
-    private val _enabled = MutableStateFlow(false)
-    val enabled: StateFlow<Boolean> = _enabled
+    private val _presetName = MutableStateFlow("")
+    val presetName: StateFlow<String> = _presetName
+
+    val enabled = viperManager.enabled
 
     init {
         viewModelScope.launch {
             viperManager.currentPreset.collect { preset ->
-                _enabled.value = preset.enabled
+                _presetName.value = preset.name
             }
         }
     }
 
-    fun setEnabled(enabled: Boolean) {
-        _enabled.value = enabled
+    fun setPresetName(name: String) {
+        // TODO
     }
+
+    fun setEnabled(enabled: Boolean) = viperManager.setEnabled(enabled)
 }
