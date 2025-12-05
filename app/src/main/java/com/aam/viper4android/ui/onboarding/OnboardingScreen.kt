@@ -33,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -51,28 +52,15 @@ fun OnboardingScreen(
     onOnboardingComplete: () -> Unit,
     onboardingViewModel: OnboardingViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
     var isIgnoringBatteryOptimizations by remember { mutableStateOf(onboardingViewModel.isIgnoringBatteryOptimizations()) }
     var hasNotificationPermission by remember { mutableStateOf(onboardingViewModel.hasNotificationPermission()) }
 
     val batteryOptimizationsResultLauncher = rememberLauncherForActivityResult(
-        object : ActivityResultContract<Unit, Boolean>() {
-            override fun createIntent(context: Context, input: Unit): Intent {
-                return Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                    .setData("package:${context.packageName}".toUri())
-            }
-            override fun parseResult(resultCode: Int, intent: Intent?): Boolean {
-                return onboardingViewModel.isIgnoringBatteryOptimizations()
-            }
-
-            override fun getSynchronousResult(
-                context: Context,
-                input: Unit
-            ): SynchronousResult<Boolean>? {
-                return null
-            }
-        }
+        ActivityResultContracts.StartActivityForResult()
     ) {
-        isIgnoringBatteryOptimizations = it
+        isIgnoringBatteryOptimizations = onboardingViewModel.isIgnoringBatteryOptimizations()
     }
 
     val notificationPermissionResultLauncher = rememberLauncherForActivityResult(
@@ -129,7 +117,11 @@ fun OnboardingScreen(
                     isDone = isIgnoringBatteryOptimizations,
                     title = stringResource(R.string.onboarding_battery_optimization_title),
                     description = stringResource(R.string.onboarding_battery_optimization_subtitle),
-                    onClick = { batteryOptimizationsResultLauncher.launch(Unit) }
+                    onClick = {
+                        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                            .setData("package:${context.packageName}".toUri())
+                        batteryOptimizationsResultLauncher.launch(intent)
+                    }
                 )
 
                 OnboardingCard(
